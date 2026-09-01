@@ -198,12 +198,10 @@
   font-size: 13px;
 }
 
-.single-canvas-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.canvas-container {
+  width: 100%;
   height: 100%;
-  color: var(--text-muted);
+  min-width: 0;
 }
 
 .process-view {
@@ -224,6 +222,47 @@
   overflow-y: auto;
   border-left: 1px solid var(--border);
   background: var(--surface);
+}
+
+/* ─── Object canvas (text + preview, ADR-0004) ──── */
+
+.object-canvas-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.object-canvas-source {
+  flex: 0 0 40%;
+  height: 100%;
+  resize: none;
+  background: var(--surface);
+  color: var(--text);
+  border: none;
+  border-right: 1px solid var(--border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  padding: 12px;
+}
+
+.object-canvas-preview {
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.object-canvas-preview svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.object-canvas-error {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 /* ─── Backlog panel (right) ─────────────────────── */

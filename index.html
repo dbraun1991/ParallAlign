@@ -104,11 +104,9 @@
               <div class="process-canvas-container"></div>
               <div class="process-properties-panel"></div>
             </div>
-            <template x-if="!['all', 'process'].includes(activeView)">
-              <div class="single-canvas-placeholder">
-                <p x-text="(activeView[0].toUpperCase() + activeView.slice(1)) + ' canvas — not yet implemented'"></p>
-              </div>
-            </template>
+            <div class="canvas-container" x-show="activeView === 'system'" x-effect="syncSystemCanvas($el)"></div>
+            <div class="canvas-container" x-show="activeView === 'interaction'" x-effect="syncInteractionCanvas($el)"></div>
+            <div class="canvas-container" x-show="activeView === 'object'" x-effect="syncObjectCanvas($el)"></div>
           </div>
         </main>
         <div class="no-issue-selected" x-show="!activeIssue">

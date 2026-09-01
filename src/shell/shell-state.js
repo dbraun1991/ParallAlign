@@ -1,5 +1,17 @@
 import { mockIssues } from '../persistence/mock-issues.js';
-import { mountProcessCanvas, unmountProcessCanvas } from '../canvases/process/process-canvas.js';
+import { mountProcessCanvas } from '../canvases/process/process-canvas.js';
+import { mountDrawioCanvas } from '../canvases/system/drawio-canvas.js';
+import { mountObjectCanvas } from '../canvases/object/object-canvas.js';
+
+// Process needs two child containers (canvas + properties panel); the
+// other engines mount straight into the single wrapper element. Adapting
+// here keeps _syncCanvas's mountFn contract uniform: (wrapperEl, viewObj,
+// onChange) => { destroy() }.
+function mountProcessCanvasAdapter(wrapperEl, viewObj, onChange) {
+  const canvasEl = wrapperEl.querySelector('.process-canvas-container');
+  const propertiesEl = wrapperEl.querySelector('.process-properties-panel');
+  return mountProcessCanvas(canvasEl, propertiesEl, viewObj, onChange);
+}
 
 const VIEWS = ['all', 'process', 'system', 'object', 'interaction'];
 
@@ -20,7 +32,10 @@ export function shellState() {
     sidebarQuery: '',
     sidebarWidth: 260,
     backlogWidth: 320,
-    _mountedProcessKey: null,
+    _processInstance: null,
+    _systemInstance: null,
+    _interactionInstance: null,
+    _objectInstance: null,
     // Mirrors the data-theme attribute the inline head script already set
     // (ADR-0014) — never re-derived independently, so this can't disagree
     // with what's actually rendered.
@@ -85,27 +100,46 @@ export function shellState() {
       window.addEventListener('mouseup', onUp);
     },
 
-    // Bound via x-effect on the Process view's container, re-evaluated on
-    // every activeView/activeIssueId change. No-ops unless the desired
-    // mounted issue actually changed, so repeated re-evaluations (Alpine
-    // re-runs x-effect on any reactive read inside it) don't remount.
-    syncProcessCanvas(wrapperEl) {
-      const shouldMount = this.activeView === 'process' && this.activeIssue;
+    // Bound via x-effect on each single-canvas view's container, re-evaluated
+    // on every activeView/activeIssueId change. No-ops unless the desired
+    // mounted issue actually changed for THIS view, so repeated
+    // re-evaluations (Alpine re-runs x-effect on any reactive read inside
+    // it) don't remount, and switching directly between two views that
+    // share an engine module (System <-> Interaction) can't let one
+    // instance's mount clobber the other's — each tracks its own handle,
+    // not module-level state.
+    _syncCanvas(view, wrapperEl, mountFn, instanceKey) {
+      const shouldMount = this.activeView === view && this.activeIssue;
       const key = shouldMount ? this.activeIssue.id : null;
-      if (key === this._mountedProcessKey) return;
+      const mountedKey = this[instanceKey] ? this[instanceKey].issueId : null;
+      if (key === mountedKey) return;
 
-      if (this._mountedProcessKey) {
-        unmountProcessCanvas();
-        this._mountedProcessKey = null;
+      if (this[instanceKey]) {
+        this[instanceKey].destroy();
+        this[instanceKey] = null;
       }
       if (shouldMount) {
-        this._mountedProcessKey = key;
-        const canvasEl = wrapperEl.querySelector('.process-canvas-container');
-        const propertiesEl = wrapperEl.querySelector('.process-properties-panel');
-        mountProcessCanvas(canvasEl, propertiesEl, this.activeIssue.views.process, (xml) => {
-          this.activeIssue.views.process.content = xml;
+        const handle = mountFn(wrapperEl, this.activeIssue.views[view], (content) => {
+          this.activeIssue.views[view].content = content;
         });
+        this[instanceKey] = { issueId: key, destroy: handle.destroy };
       }
+    },
+
+    syncProcessCanvas(el) {
+      this._syncCanvas('process', el, mountProcessCanvasAdapter, '_processInstance');
+    },
+
+    syncSystemCanvas(el) {
+      this._syncCanvas('system', el, mountDrawioCanvas, '_systemInstance');
+    },
+
+    syncInteractionCanvas(el) {
+      this._syncCanvas('interaction', el, mountDrawioCanvas, '_interactionInstance');
+    },
+
+    syncObjectCanvas(el) {
+      this._syncCanvas('object', el, mountObjectCanvas, '_objectInstance');
     },
   };
 }
