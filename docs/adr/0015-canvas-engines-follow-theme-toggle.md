@@ -2,6 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-09-01
+- Process portion superseded by: [ADR-0016](0016-process-canvas-stays-light-themed.md) — Process now stays light-themed regardless of shell theme; System/Interaction/Object's decisions below are unaffected.
 - Relates to: [ADR-0002](0002-process-canvas-bpmn-js.md), [ADR-0003](0003-system-integration-and-interaction-canvases-drawio.md), [ADR-0004](0004-object-canvas-mermaid.md), [ADR-0014](0014-theme-toggle-light-and-dark-mode.md)
 
 ## Context
