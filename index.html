@@ -6,7 +6,103 @@
     <title>Parall-Align</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app" x-data="shell()" x-cloak>
+      <div class="shell">
+        <aside class="sidebar" :style="`width: ${sidebarWidth}px`">
+          <details class="sidebar-collapse" open>
+            <summary class="sidebar-summary">Issues</summary>
+            <div class="sidebar-body">
+              <input
+                type="search"
+                class="sidebar-search"
+                placeholder="Search issues…"
+                x-model="sidebarQuery"
+              />
+              <ul class="issue-list">
+                <template x-for="issue in filteredIssues" :key="issue.id">
+                  <li>
+                    <button
+                      type="button"
+                      class="issue-item"
+                      :class="{ active: issue.id === activeIssueId }"
+                      @click="selectIssue(issue.id)"
+                    >
+                      <span class="issue-title" x-text="issue.title"></span>
+                      <span class="issue-meta">
+                        <span class="issue-theme" x-text="issue.theme"></span>
+                        <span class="issue-state" :class="'state-' + issue.state" x-text="issue.state"></span>
+                      </span>
+                    </button>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </details>
+          <div class="resize-handle resize-handle-right" @mousedown="startResize('sidebar', $event)"></div>
+        </aside>
+
+        <main class="view-switcher" x-show="activeIssue">
+          <nav class="view-tabs">
+            <template x-for="view in ['all', 'process', 'system', 'object', 'interaction']" :key="view">
+              <button
+                type="button"
+                class="view-tab"
+                :class="{ active: activeView === view }"
+                @click="setView(view)"
+                x-text="view === 'all' ? 'All' : view[0].toUpperCase() + view.slice(1)"
+              ></button>
+            </template>
+          </nav>
+          <div class="view-content">
+            <template x-if="activeView === 'all'">
+              <div class="all-grid">
+                <div class="all-cell">
+                  <h3>Process</h3>
+                  <p class="placeholder">not yet implemented</p>
+                </div>
+                <div class="all-cell">
+                  <h3>System/Integration</h3>
+                  <p class="placeholder">not yet implemented</p>
+                </div>
+                <div class="all-cell">
+                  <h3>Object</h3>
+                  <p class="placeholder">not yet implemented</p>
+                </div>
+                <div class="all-cell">
+                  <h3>Interaction</h3>
+                  <p class="placeholder">not yet implemented</p>
+                </div>
+              </div>
+            </template>
+            <template x-if="activeView !== 'all'">
+              <div class="single-canvas-placeholder">
+                <p x-text="(activeView[0].toUpperCase() + activeView.slice(1)) + ' canvas — not yet implemented'"></p>
+              </div>
+            </template>
+          </div>
+        </main>
+        <div class="no-issue-selected" x-show="!activeIssue">
+          <p>Select an Issue from the sidebar to begin.</p>
+        </div>
+
+        <aside class="backlog-panel" x-show="activeIssue" :class="{ collapsed: !backlogExpanded }" :style="backlogExpanded ? `width: ${backlogWidth}px` : ''">
+          <div class="resize-handle resize-handle-left" x-show="backlogExpanded" @mousedown="startResize('backlog', $event)"></div>
+          <button type="button" class="backlog-toggle" @click="toggleBacklog()" x-text="backlogExpanded ? '›' : '‹'"></button>
+          <div class="backlog-body" x-show="backlogExpanded" x-cloak>
+            <template x-if="activeIssue">
+              <div>
+                <h2 x-text="activeIssue.title"></h2>
+                <p class="backlog-meta">
+                  <span x-text="activeIssue.theme"></span> ·
+                  <span class="issue-state" :class="'state-' + activeIssue.state" x-text="activeIssue.state"></span>
+                </p>
+                <p class="backlog-notes" x-text="activeIssue.notes || '(no notes)'"></p>
+              </div>
+            </template>
+          </div>
+        </aside>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
