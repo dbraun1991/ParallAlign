@@ -6,7 +6,7 @@
 
 ## Context
 
-ADR-0001 named cross-canvas linking as an open risk of the specialized-engine-per-canvas architecture: "BPMN element IDs, mxGraph cell IDs, Mermaid node IDs, and backlog item IDs are four incompatible ID spaces. ParallAlign must design and maintain its own cross-reference layer on top of them." An earlier draft of this ADR proposed solving that directly with a per-tool link-attachment pattern (context-pad action, moddle/cell-attribute storage, overlay badges, a picker modal) modeled on a sibling project's (`bpmn-process-creator`) hyperlink feature, plus a central link registry anchored in the Backlog Canvas.
+ADR-0001 named cross-canvas linking as an open risk of the specialized-engine-per-canvas architecture: "BPMN element IDs, mxGraph cell IDs, Mermaid node IDs, and backlog item IDs are four incompatible ID spaces. ParallAlign must design and maintain its own cross-reference layer on top of them." An earlier draft of this ADR proposed solving that directly with a per-tool link-attachment pattern (context-pad action, moddle/cell-attribute storage, overlay badges, a picker modal), plus a central link registry anchored in the Backlog Canvas.
 
 That framing assumed cross-canvas association needs to be resolved *at the element level*, element-by-element. It doesn't: **every ParallAlign Issue already bundles its Process, System/Integration, Object, and Interaction canvases together with its Backlog entry as one unit** (README: an Issue holds all five views). Per [ADR-0008](0008-issue-shell-view-switcher-and-persistent-backlog-panel.md), the Backlog panel is now always visible alongside whichever canvas is open, for every Issue, not just in a separate overview mode. Given that, a reader moving between an Issue's canvases already has the connecting context (the Issue itself, and its always-visible Backlog entry) without needing to jump from one specific diagram element to one specific element on another diagram.
 
@@ -31,4 +31,4 @@ This removes the need for everything the earlier draft of this ADR proposed: no 
 
 ## Alternatives considered
 
-- **Per-tool link-attachment pattern + Backlog-anchored registry** (this ADR's own earlier draft, modeled on `bpmn-process-creator`'s hyperlink module). Rejected: solves a problem — cross-element navigation *within* an Issue — that the Issue-level bundling plus always-visible Backlog panel (ADR-0008) already makes largely unnecessary for the prototype's goals, at a much higher implementation cost (four storage mechanisms, one shared registry and picker UI).
+- **Per-tool link-attachment pattern + Backlog-anchored registry** (this ADR's own earlier draft). Rejected: solves a problem — cross-element navigation *within* an Issue — that the Issue-level bundling plus always-visible Backlog panel (ADR-0008) already makes largely unnecessary for the prototype's goals, at a much higher implementation cost (four storage mechanisms, one shared registry and picker UI).

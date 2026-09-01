@@ -6,7 +6,7 @@
 
 ## Context
 
-ADR-0001 picked bpmn-js, the draw.io embed, and Mermaid as the three tool-backed canvas engines, but never decided *how the frontend obtains them*. Two of this workspace's sibling projects show both ends of that choice already: `OrgVisualizr`/`Climb-Buddy-Belay`/`Metroviz` load everything via plain `<script>` tags from a CDN with no build step at all (ADR-001 in `OrgVisualizr`); `bpmn-process-creator` uses npm (`package.json`, `node_modules`) alongside its Express server, though only for backend dependencies — its frontend is still CDN/static-asset based.
+ADR-0001 picked bpmn-js, the draw.io embed, and Mermaid as the three tool-backed canvas engines, but never decided *how the frontend obtains them*. This workspace's other sibling projects show one end of that choice already: `OrgVisualizr`/`Climb-Buddy-Belay`/`Metroviz` load everything via plain `<script>` tags from a CDN with no build step at all (ADR-001 in `OrgVisualizr`).
 
 ADR-0011 already put an Express/Node server in ParallAlign's future, and for the same reasons that ADR gave (one runtime, one dependency manager, reuse across client/server tooling) it's worth asking whether the frontend should also go through npm, now that a `package.json` and `node_modules` are going to exist in this repo regardless once that server is built.
 
@@ -18,7 +18,7 @@ Use **npm** as the package manager and **Vite** as the dev server/bundler for th
 
 - All frontend dependencies (bpmn-js, the draw.io embed package, Mermaid, isomorphic-git, and any UI-layer libraries added later) are installed via `npm install` and imported as ES modules, not referenced by CDN URL.
 - Vite provides the local dev server (with hot reload) during development and produces a static build output for production, which the Express server (ADR-0011) serves as static files alongside its API routes — the frontend build and the backend stay two concerns in one repo, not two separately deployed services.
-- One top-level `package.json` for now (frontend and backend dependencies together), matching `bpmn-process-creator`'s single-`package.json` shape; split into workspaces later only if the two sides' dependency graphs start actively conflicting.
+- One top-level `package.json` for now (frontend and backend dependencies together) — a single package manifest for the whole repo; split into workspaces later only if the two sides' dependency graphs start actively conflicting.
 - Exact dependency versions are pinned via `package-lock.json`, committed to the repo — the lockfile is what removes the CDN approach's "which version is this URL actually serving today" ambiguity.
 
 ## Consequences

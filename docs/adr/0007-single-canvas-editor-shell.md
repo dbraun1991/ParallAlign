@@ -6,18 +6,19 @@
 
 ## Context
 
-[ADR-0008](0008-issue-shell-view-switcher-and-persistent-backlog-panel.md) defines the overall shell: a left Issue sidebar, a main area that switches between "All" (the four-canvas overview) and one of the four single-canvas editors, and a persistent, minimizable Backlog panel on the right. This ADR covers *how* the two chrome panels — Issue sidebar and Backlog panel — are built, plus one Process-Canvas-specific addition, reusing patterns already proven in two sibling projects in this workspace rather than designing panel UX from scratch:
+[ADR-0008](0008-issue-shell-view-switcher-and-persistent-backlog-panel.md) defines the overall shell: a left Issue sidebar, a main area that switches between "All" (the four-canvas overview) and one of the four single-canvas editors, and a persistent, minimizable Backlog panel on the right. This ADR covers *how* the two chrome panels — Issue sidebar and Backlog panel — are built, plus one Process-Canvas-specific addition.
 
-- **`bpmn-process-creator`** (`public/index.html`, `public/css/sidebar.css`, `setupSidebarResize()` in `public/app.js`): a resizable `<aside>` (drag handle, `mousedown`/`mousemove` resize, `ew-resize` cursor) containing a search field, tabs ("Recent" / full list), and a folder tree — built for browsing many saved files.
-- **`Climb-Buddy-Belay`** (`index.html`, `AGENTS.md`'s "Responsive sidebar" section): a simpler `<aside class="sidebar">` that, below a 768px breakpoint, collapses into a native `<details class="sidebar-collapse" open>`/`<summary>` disclosure — no JS, pure CSS — so the sidebar stays usable on mobile without a bespoke hamburger-menu implementation.
+The Issue sidebar needs two independent pieces of UX: a **resizable panel** (drag handle, `mousedown`/`mousemove` resize, `ew-resize` cursor, min/max width clamped) so it doesn't permanently claim a fixed share of the screen, and a **responsive mobile collapse** so it doesn't just get cramped below a phone-width viewport. For the latter, a sibling project in this workspace already has a proven, dependency-free pattern worth reusing directly:
+
+- **`Climb-Buddy-Belay`** (`index.html`, `AGENTS.md`'s "Responsive sidebar" section): a simple `<aside class="sidebar">` that, below a 768px breakpoint, collapses into a native `<details class="sidebar-collapse" open>`/`<summary>` disclosure — no JS, pure CSS — so the sidebar stays usable on mobile without a bespoke hamburger-menu implementation.
 
 Separately, the bpmn.io ecosystem ships an official **properties panel** — [`@bpmn-io/properties-panel`](https://github.com/bpmn-io/bpmn-js-properties-panel) — for editing a selected BPMN element's own attributes (name, documentation, …). This is unrelated to cross-canvas association (ADR-0006 decided against building that at all) — it's purely about editing the attributes of whatever element is selected within the Process Canvas itself.
 
 ## Decision
 
-**Issue sidebar (left)** — combine both sibling patterns:
+**Issue sidebar (left)**:
 
-- Resizable via `bpmn-process-creator`'s drag-handle mechanism (min/max width clamped), holding a search field and a list of Issues (title + theme/state, per the Backlog Canvas's data model, ADR-0005) — this is the "used for issues" browser, not a per-canvas file browser.
+- Resizable via a drag-handle mechanism (`mousedown`/`mousemove` resize, `ew-resize` cursor, min/max width clamped), holding a search field and a list of Issues (title + theme/state, per the Backlog Canvas's data model, ADR-0005) — this is the "used for issues" browser, not a per-canvas file browser.
 - Responsive collapse via `Climb-Buddy-Belay`'s `<details>`/`<summary>` pattern below the same mobile breakpoint — no separate mobile nav implementation needed.
 
 **Backlog panel (right)** — same resizable-`<aside>` mechanism, mirrored to the right edge, present in every view (All and each of the four single-canvas editors per ADR-0008) rather than appearing only inside one grid layout. Add a minimize/collapse toggle (distinct from the mobile `<details>` collapse — this one is a deliberate user action available at any viewport width, since ADR-0008 requires the Backlog panel to be dismissible without leaving the current view).
@@ -28,7 +29,7 @@ Separately, the bpmn.io ecosystem ships an official **properties panel** — [`@
 
 **Positive**
 
-- Both the resize interaction and the mobile-collapse interaction are reused wholesale from working sibling implementations instead of designed from scratch.
+- The mobile-collapse interaction is reused wholesale from a working sibling implementation (`Climb-Buddy-Belay`) instead of designed from scratch, and the resize interaction (drag handle, min/max clamp) is a small, self-contained addition on top of it.
 - The Issue sidebar's and Backlog panel's shared resize mechanism means one CSS/JS implementation serves both, despite sitting on opposite edges of the shell.
 - `@bpmn-io/properties-panel` gives the Process Canvas a maintained, BPMN-aware element-editing UI "for free," consistent with ADR-0001's general rationale for choosing mature tooling over reimplementation.
 
@@ -40,5 +41,5 @@ Separately, the bpmn.io ecosystem ships an official **properties panel** — [`@
 
 ## Alternatives considered
 
-- **Modal-based element property editing** (matching `bpmn-process-creator`'s own hand-built hyperlink/documentation modals, which predate that project's adoption of any docked properties panel). Rejected for Process Canvas: a docked panel keeps attributes visible while browsing the canvas; a modal was only ever necessary in `bpmn-process-creator` for the cross-file link picker, a use case ADR-0006 has since decided ParallAlign doesn't need.
+- **Modal-based element property editing**, rather than a docked panel. Rejected for Process Canvas: a docked panel keeps attributes visible while browsing the canvas, where a modal would have to be reopened for every element; a modal-based picker is only really justified for something like a cross-file link picker, a use case ADR-0006 has already decided ParallAlign doesn't need.
 - **Hand-built properties panel** instead of `@bpmn-io/properties-panel`. Rejected: ADR-0001's stated priority is mature "for free" tooling over reimplementation, and the official panel is a closer fit than reproducing it.
