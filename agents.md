@@ -88,6 +88,7 @@ Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
 | `docs/adr/0010-*.md` | Cross-issue copy: always latest version, overwrite, git-recorded provenance |
 | `docs/adr/0011-*.md` | Server-backed persistence: Express (Node), not a second-language backend |
 | `docs/adr/0012-*.md` | Frontend build tooling: npm + Vite, not CDN script tags |
+| `docs/adr/0013-*.md` | Shell UI reactivity: Alpine.js |
 
 ## Architecture Decisions
 
@@ -105,6 +106,7 @@ Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
 | [0010](docs/adr/0010-cross-issue-copy.md) | Copy a view/Backlog entry from another Issue: always HEAD, full overwrite, `copiedFrom` provenance (keyed on the source view's UUID) recorded, never a live link |
 | [0011](docs/adr/0011-server-backend-express.md) | Server-backed persistence, once built, is Express (Node) — reuses `isomorphic-git`-derived logic, keeps the Yjs/realtime path open for Mermaid, one runtime for a solo build |
 | [0012](docs/adr/0012-frontend-build-tooling-vite.md) | Frontend departs from the CDN/no-build sibling convention: npm + Vite, for lockfile-pinned versions across four separately-evolving libraries and a dev server shared with the eventual Express backend |
+| [0013](docs/adr/0013-shell-ui-reactivity-alpinejs.md) | Shell chrome (not the canvases) uses Alpine.js for state/DOM binding — matches the `OrgVisualizr` sibling convention, small footprint, fits ADR-0008's Backlog-panel reset-on-activation rule |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is **not yet finalized** (ADR-0001) — code and docs alike currently use the README naming; check `docs/adr/README.md` before assuming it's settled. This is exactly why views and the Backlog entry carry their own UUIDs (ADR-0009): identity must survive a naming decision that hasn't happened yet.
 
