@@ -4,7 +4,7 @@
 
 Parall-Align is a webapp for remote teams that need business and technical stakeholders to understand the same system the same way. A project holds a small set of shared, deliberately incomplete visual **canvases** — Backlog, Process, Object, System/Integration, Interaction — that give parallel, cross-linked views of the same backlog item. See `README.md` for the full product framing.
 
-**Current status: all five views working.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; the Vite pipeline (ADR-0012), the Issue-shell (`src/shell/`, ADR-0007/0008/0013), the light/dark toggle (ADR-0014), and all four canvas engines — Process (bpmn-js + `@bpmn-io/properties-panel`, ADR-0002/0007), System/Interaction (draw.io embed, ADR-0003), Object (Mermaid text+preview, ADR-0004) — all work against hardcoded mock Issues (`src/persistence/mock-issues.js`). There's no real persistence yet — every edit across every canvas is in-memory only and resets on every page load. Treat every ADR's decision as the plan for what's still unbuilt (real persistence, cross-issue copy, canvas naming finalization, and the rest of "Features & Future Work" below).
+**Current status: real persistence.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; the Vite pipeline (ADR-0012), the Issue-shell (`src/shell/`, ADR-0007/0008/0013), the light/dark toggle (ADR-0014), all four canvas engines (Process/System/Interaction/Object), and real git-backed persistence (`src/persistence/`, ADR-0009 — `isomorphic-git`/`lightning-fs` over IndexedDB, one JSON file per Issue, every save a commit) are all working end to end: edits survive a page reload. Three example Issues are seeded automatically on first run (`src/persistence/seed-issues.js`) since there's still no "create Issue" UI, and Backlog fields (title/theme/state/notes) are still read-only display, not editable — both pre-existing gaps, not this step's job to fix. Per-view history *browsing* (ADR-0009's other half — revisit/restore an old version) has its data-layer support in place (`getIssueHistory`/`readIssueAtCommit` in `src/persistence/git-store.js`) but no UI yet. Treat every ADR's decision as the plan for what's still unbuilt (history UI, cross-issue copy, canvas naming finalization, and the rest of "Features & Future Work" below).
 
 ## Development
 
@@ -125,7 +125,7 @@ Conventions worth carrying forward once implementation starts, consistent with e
 
 ## Planned Frontend Module Layout
 
-**`src/shell/`, `src/persistence/mock-issues.js`, `src/css/`, and all four `src/canvases/*/` have real implementation code; only `src/copy/` is still a directory with just a purpose-note `README.md`.** `src/canvases/interaction/` has no implementation file of its own — it shares `src/canvases/system/drawio-canvas.js` (ADR-0003: one integration, two canvases). Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
+**`src/shell/`, `src/persistence/`, `src/css/`, and all four `src/canvases/*/` have real implementation code; only `src/copy/` is still a directory with just a purpose-note `README.md`.** `src/canvases/interaction/` has no implementation file of its own — it shares `src/canvases/system/drawio-canvas.js` (ADR-0003: one integration, two canvases). Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
 
 | Path | Role | ADR |
 |------|------|-----|
@@ -136,7 +136,7 @@ Conventions worth carrying forward once implementation starts, consistent with e
 | `src/canvases/system/` | System/Integration Canvas: draw.io embed | 0003 |
 | `src/canvases/interaction/` | Interaction Canvas: draw.io embed | 0003 |
 | `src/canvases/object/` | Object Canvas: Mermaid text+preview | 0004 |
-| `src/persistence/` | Issue JSON model + client-side git (`isomorphic-git`/IndexedDB), per-view history diffing | 0009 |
+| `src/persistence/` | Issue JSON model + client-side git (`isomorphic-git`/`lightning-fs`/IndexedDB), debounced autosave-as-commit; per-view history data-layer done, browsing UI not yet built | 0009 |
 | `src/copy/` | Cross-issue copy mechanics (HEAD-only, overwrite, `copiedFrom` provenance) | 0010 |
 | `src/dialog/` | Promise-based modal system (no native `confirm()`/`alert()`) | sibling convention |
 | `src/css/` | One stylesheet per concern, CSS custom properties + `data-theme` | sibling convention |
