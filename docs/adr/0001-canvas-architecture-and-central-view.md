@@ -2,6 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-09-01
+- Layout partially superseded by: [ADR-0008](0008-issue-shell-view-switcher-and-persistent-backlog-panel.md) — the Central View's 2×2+B-column grid and the "navigate from Central View into a single-canvas edit view" model described below are replaced by an issue-scoped shell (sidebar issue browser, All/P/S/O/I view switcher, persistent Backlog panel). The per-canvas engine choices below (bpmn-js/draw.io/Mermaid/custom list) are unaffected.
 
 ## Context
 

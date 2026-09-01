@@ -1,0 +1,126 @@
+# agents.md — ParallAlign
+
+## What This Is
+
+ParallAlign is a webapp for remote teams that need business and technical stakeholders to understand the same system the same way. A project holds a small set of shared, deliberately incomplete visual **canvases** — Backlog, Process, Object, System/Integration, Interaction — that give parallel, cross-linked views of the same backlog item. See `README.md` for the full product framing.
+
+**Current status: pre-implementation.** This repository holds product framing (`README.md`) and architecture decisions (`docs/adr/`) only — no application code exists yet. Treat every ADR's decision as the plan, not as something already built; nothing below describes running code.
+
+## Core Idea
+
+Each of the five canvases is built on the best-fit existing open tool for its notation rather than one shared canvas SDK, prioritizing standard-format compatibility and "mature editor for free" over interaction consistency across canvases (ADR-0001). An Issue bundles all five canvases together (README); the shell is issue-scoped, not canvas-scoped (ADR-0008): pick an Issue in the sidebar, then switch between a read-only **All** overview and each canvas's full-screen editor, with the **Backlog** panel staying visible on the right throughout, minimizable but never a separate mode you have to leave the others to see.
+
+## Planned Architecture
+
+```
++-----------+---------------------------------------------+-----------+
+| Issue     |  View switcher: [All] [P] [S] [O] [I]        | Backlog   |
+| sidebar   |-----------------------------------------------| panel     |
+| (search,  |                                                | (always   |
+| resizable,|  "All": read-only 2x2 grid of P/S/O/I,         | visible   |
+| <details> |    click-through to a single view              | across    |
+| collapse  |  single view: that canvas's native editor,     | every     |
+| on mobile)|    engine + (Process only) bpmn-io properties  | view,     |
+|           |    panel for the selected element               | minimiz-  |
+|           |                                                | able)     |
++-----------+---------------------------------------------+-----------+
+Activating an Issue always resets view -> All and Backlog -> expanded;
+switching views within an already-open Issue leaves both exactly as left.
+(ADR-0008, panel mechanics in ADR-0007; supersedes ADR-0001's layout)
+
+Canvas engines
+  Process (P)              — bpmn-js, .bpmn XML                 (ADR-0002)
+  System/Integration (S)   — draw.io embed, .drawio XML          (ADR-0003)
+  Interaction (I)          — draw.io embed, .drawio XML          (ADR-0003)
+  Object (O)                — Mermaid, plain-text diagram source  (ADR-0004)
+  Backlog (B)                — custom list component, ParallAlign-native (ADR-0005)
+
+No cross-canvas element-link registry (ADR-0006) — an Issue's five canvases
+are already bundled together, and Backlog stays visible alongside whichever
+one is open, so the Issue itself is the association; no per-element ID
+scheme needed.
+
+Persistence — one JSON document per Issue (ADR-0009):
+  issues/<issueId>.json = { id, title, theme, state, notes,
+    views: { process: {id, format, content}, system: {...}, ... } }
+  Issue id doubles as the Backlog entry's id; every view also carries its
+  own id, stable across any future rename of the view/canvas naming
+  (README/ADR-0001: canvas naming isn't finalized yet) — names can change,
+  ids stay clean. Git-backed: every save is a commit; per-view history is
+  derived by diffing that one field across consecutive commits, not stored
+  separately. For now (feasibility/draft stage), git runs fully client-side
+  (e.g. isomorphic-git + IndexedDB) — no backend yet; revisit once
+  multi-device/multi-user access is needed.
+
+Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
+  Issue, always reading the source's current HEAD (never a historical
+  version), full overwrite at the destination, provenance recorded both in
+  the commit message and as a `copiedFrom: {issueId, viewId, commit, at}`
+  field — a one-time fork, never a live link (consistent with ADR-0006).
+```
+
+## Key Docs
+
+| File | Role |
+|------|------|
+| `README.md` | Product framing — naming, the five canvases, what each is/isn't for |
+| `docs/adr/README.md` | ADR index — numbered, append-only decision log |
+| `docs/adr/0001-*.md` | Canvas architecture: specialized engine per canvas + read-only Central View |
+| `docs/adr/0002-*.md` | Process Canvas: bpmn-js |
+| `docs/adr/0003-*.md` | System/Integration + Interaction Canvases: draw.io |
+| `docs/adr/0004-*.md` | Object Canvas: Mermaid |
+| `docs/adr/0005-*.md` | Backlog Canvas: custom list component |
+| `docs/adr/0006-*.md` | No cross-canvas element-link registry: Issue-level grouping is the association |
+| `docs/adr/0007-*.md` | Issue-shell panels: resizable Issue sidebar + Backlog panel, bpmn-js properties panel |
+| `docs/adr/0008-*.md` | Issue shell: sidebar Issue browser, All/P/S/O/I view switcher, persistent minimizable Backlog panel |
+| `docs/adr/0009-*.md` | Issue persistence: one JSON document per Issue, git-backed per-view history |
+| `docs/adr/0010-*.md` | Cross-issue copy: always latest version, overwrite, git-recorded provenance |
+
+## Architecture Decisions
+
+| ADR | Decision |
+|-----|----------|
+| [0001](docs/adr/0001-canvas-architecture-and-central-view.md) | Specialized engine per canvas, not one unified SDK (layout portion superseded by 0008) |
+| [0002](docs/adr/0002-process-canvas-bpmn-js.md) | Process Canvas: bpmn-js, `.bpmn` XML, bpmn.io License (watermark) |
+| [0003](docs/adr/0003-system-integration-and-interaction-canvases-drawio.md) | System/Integration + Interaction Canvases: draw.io embed, `.drawio` XML, Apache-2.0 |
+| [0004](docs/adr/0004-object-canvas-mermaid.md) | Object Canvas: Mermaid text source, MIT, text+preview editing model (not drag-and-drop) |
+| [0005](docs/adr/0005-backlog-canvas-custom-list.md) | Backlog Canvas: custom list component, ParallAlign-native data model |
+| [0006](docs/adr/0006-cross-canvas-linking.md) | No cross-canvas element-link registry — an Issue's bundled canvases + always-visible Backlog panel are association enough |
+| [0007](docs/adr/0007-single-canvas-editor-shell.md) | Issue sidebar + Backlog panel share one resizable-panel mechanism (`bpmn-process-creator`) + mobile `<details>` collapse (`Climb-Buddy-Belay`); `@bpmn-io/properties-panel` for Process Canvas only |
+| [0008](docs/adr/0008-issue-shell-view-switcher-and-persistent-backlog-panel.md) | Issue-scoped shell: sidebar Issue browser, All/P/S/O/I view switcher, Backlog panel always visible and minimizable; activating an Issue always resets to All + expanded Backlog |
+| [0009](docs/adr/0009-issue-persistence-and-versioning.md) | One JSON document per Issue; every view + the Backlog entry carries a stable UUID; git commit history is the version log (client-side for now); per-view history derived by field-level diffing |
+| [0010](docs/adr/0010-cross-issue-copy.md) | Copy a view/Backlog entry from another Issue: always HEAD, full overwrite, `copiedFrom` provenance (keyed on the source view's UUID) recorded, never a live link |
+
+Naming for the canvases (Process/System/Object/Interaction/Backlog) is **not yet finalized** (ADR-0001) — code and docs alike currently use the README naming; check `docs/adr/README.md` before assuming it's settled. This is exactly why views and the Backlog entry carry their own UUIDs (ADR-0009): identity must survive a naming decision that hasn't happened yet.
+
+## Sibling-Project Conventions Used Here
+
+ParallAlign shares this workspace with other solo-built webapps (`bpmn-process-creator`, `Climb-Buddy-Belay`, `Metroviz`, `OrgVisualizr`), each with its own `agents.md`/`AGENTS.md` and `docs/adr(s)/`. Where ParallAlign's own ADRs cite a sibling project's implementation as precedent (ADR-0007 cites `bpmn-process-creator`'s resizable sidebar and `Climb-Buddy-Belay`'s mobile `<details>` collapse), that project's source is the concrete reference to read before implementing the ParallAlign equivalent — don't re-derive the pattern from scratch.
+
+Conventions worth carrying forward once implementation starts, consistent with every sibling project in this workspace:
+
+- **ADRs are append-only** (`docs/adr/README.md`) — a changed decision gets a new ADR that supersedes the old one, never an edit to the old ADR's Decision section. A superseded ADR gets a one-line forward pointer added to its metadata header only (see ADR-0001's "Layout partially superseded by" line) — its own Context/Decision/Consequences stay untouched.
+- **One module per concern** in both CSS and JS (see `bpmn-process-creator/public/css/`, `OrgVisualizr/js/`) rather than monolithic files — expect this to mean, at minimum, separate modules per canvas engine integration plus the Issue sidebar and Backlog panel (ADR-0007/0008).
+- **No framework-default confirm/alert** — sibling projects use a promise-based custom dialog module (`OrgVisualizr/js/dialog.js`) instead of native `confirm()`/`alert()`; adopt the same if/when Object/Backlog canvases need confirmation prompts.
+- **Theme via CSS custom properties** on `:root`, `data-theme` attribute for light/dark, set before first paint to avoid a flash of the wrong theme (`OrgVisualizr/agents.md`'s "Theming" section) — apply this to the Issue shell chrome (ADR-0007/0008), independent of whatever theming each embedded engine (bpmn-js/draw.io/Mermaid) supports natively.
+
+## Features & Future Work
+
+Captured from ADR discussion so far, not yet designed or built beyond the ADR that names it. Treat as direction, not spec — clarify open questions with the user before implementing rather than guessing at exact behavior.
+
+- **Server-backed git layer.** ADR-0009 chose fully client-side git (`isomorphic-git`/IndexedDB) to reach a working prototype fastest. A server holding the real repo (matching `bpmn-process-creator`'s Express+filesystem precedent) is the expected next step once multi-device access or real-time collaboration (ADR-0001, already deferred) are actually needed — client-side git has no story for a second device or person seeing the same Issue.
+- **Canvas naming finalization.** README/ADR-0001 flag Process/System/Object/Interaction/Backlog naming as provisional. ADR-0009's per-view UUIDs mean this can be resolved later without a data migration — but the rename itself (UI copy, `views.<name>` key vs. `id`, any docs referencing the current names) is still unbuilt work when it happens.
+- **User-facing view/Issue titles distinct from the fixed type-key.** ADR-0009 gives every view its own `id` independent of the `views.<name>` slot it lives in — that decouples identity from naming but doesn't itself add a UI for renaming/relabeling a view or an Issue; whether that's wanted at all is still open.
+- **Cross-issue picker/search UI for copy** (ADR-0010) — the copy mechanics (read HEAD, overwrite, record provenance) are decided; choosing *which* Issue and view to copy from needs its own picker UI, not designed yet.
+- **Concurrent-edit / merge story** for one Issue's single JSON document (ADR-0009's noted risk) — relevant once more than one person can edit the same Issue; out of scope while client-side/single-user.
+- **Cross-canvas element-level linking**, reconsidered. ADR-0006 explicitly decided against building this now, on the grounds that Issue-level bundling plus the always-visible Backlog panel cover the need. If element-to-element navigation (e.g. one BPMN task ↔ one Object-canvas entity) turns out to matter in practice, it's new scope requiring its own ADR — not a partially-built feature waiting to be finished.
+- **Real-time multiplayer editing** across all four tool-backed canvases (ADR-0001/0002/0003/0004) — explicitly lower priority than format compatibility for the initial feasibility prototype; per-canvas feasibility notes already live in ADR-0002/0003/0004.
+
+## What It Does NOT Do (yet)
+
+Nothing is implemented. Beyond that, per the current ADRs:
+
+- No real-time multiplayer editing in any of the four tool-backed canvases out of the box (ADR-0001/0002/0003/0004) — explicitly lower priority than format compatibility for the initial feasibility prototype.
+- No cross-canvas element-level linking (ADR-0006, decided against) — association only happens at the Issue level; you can't point from one specific BPMN task to one specific Object-canvas entity.
+- No live cross-issue references (ADR-0010) — copy is a one-time overwrite snapshot, never a link that stays in sync with its source.
+- No multi-device or multi-user access to the same Issue (ADR-0009) — the git layer is client-side only, for now.
