@@ -75,6 +75,7 @@ Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
 | `docs/adr/0008-*.md` | Issue shell: sidebar Issue browser, All/P/S/O/I view switcher, persistent minimizable Backlog panel |
 | `docs/adr/0009-*.md` | Issue persistence: one JSON document per Issue, git-backed per-view history |
 | `docs/adr/0010-*.md` | Cross-issue copy: always latest version, overwrite, git-recorded provenance |
+| `docs/adr/0011-*.md` | Server-backed persistence: Express (Node), not a second-language backend |
 
 ## Architecture Decisions
 
@@ -90,6 +91,7 @@ Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
 | [0008](docs/adr/0008-issue-shell-view-switcher-and-persistent-backlog-panel.md) | Issue-scoped shell: sidebar Issue browser, All/P/S/O/I view switcher, Backlog panel always visible and minimizable; activating an Issue always resets to All + expanded Backlog |
 | [0009](docs/adr/0009-issue-persistence-and-versioning.md) | One JSON document per Issue; every view + the Backlog entry carries a stable UUID; git commit history is the version log (client-side for now); per-view history derived by field-level diffing |
 | [0010](docs/adr/0010-cross-issue-copy.md) | Copy a view/Backlog entry from another Issue: always HEAD, full overwrite, `copiedFrom` provenance (keyed on the source view's UUID) recorded, never a live link |
+| [0011](docs/adr/0011-server-backend-express.md) | Server-backed persistence, once built, is Express (Node) — reuses `isomorphic-git`-derived logic, keeps the Yjs/realtime path open for Mermaid, one runtime for a solo build |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is **not yet finalized** (ADR-0001) — code and docs alike currently use the README naming; check `docs/adr/README.md` before assuming it's settled. This is exactly why views and the Backlog entry carry their own UUIDs (ADR-0009): identity must survive a naming decision that hasn't happened yet.
 
@@ -108,7 +110,7 @@ Conventions worth carrying forward once implementation starts, consistent with e
 
 Captured from ADR discussion so far, not yet designed or built beyond the ADR that names it. Treat as direction, not spec — clarify open questions with the user before implementing rather than guessing at exact behavior.
 
-- **Server-backed git layer.** ADR-0009 chose fully client-side git (`isomorphic-git`/IndexedDB) to reach a working prototype fastest. A server holding the real repo (matching `bpmn-process-creator`'s Express+filesystem precedent) is the expected next step once multi-device access or real-time collaboration (ADR-0001, already deferred) are actually needed — client-side git has no story for a second device or person seeing the same Issue.
+- **Server-backed git layer.** ADR-0009 chose fully client-side git (`isomorphic-git`/IndexedDB) to reach a working prototype fastest. A server holding the real repo, built in Express/Node (ADR-0011, matching `bpmn-process-creator`'s Express+filesystem precedent) is the expected next step once multi-device access or real-time collaboration (ADR-0001, already deferred) are actually needed — client-side git has no story for a second device or person seeing the same Issue.
 - **Canvas naming finalization.** README/ADR-0001 flag Process/System/Object/Interaction/Backlog naming as provisional. ADR-0009's per-view UUIDs mean this can be resolved later without a data migration — but the rename itself (UI copy, `views.<name>` key vs. `id`, any docs referencing the current names) is still unbuilt work when it happens.
 - **User-facing view/Issue titles distinct from the fixed type-key.** ADR-0009 gives every view its own `id` independent of the `views.<name>` slot it lives in — that decouples identity from naming but doesn't itself add a UI for renaming/relabeling a view or an Issue; whether that's wanted at all is still open.
 - **Cross-issue picker/search UI for copy** (ADR-0010) — the copy mechanics (read HEAD, overwrite, record provenance) are decided; choosing *which* Issue and view to copy from needs its own picker UI, not designed yet.
