@@ -4,7 +4,18 @@
 
 Parall-Align is a webapp for remote teams that need business and technical stakeholders to understand the same system the same way. A project holds a small set of shared, deliberately incomplete visual **canvases** — Backlog, Process, Object, System/Integration, Interaction — that give parallel, cross-linked views of the same backlog item. See `README.md` for the full product framing.
 
-**Current status: pre-implementation.** This repository holds product framing (`README.md`) and architecture decisions (`docs/adr/`) only — no application code exists yet. Treat every ADR's decision as the plan, not as something already built; nothing below describes running code.
+**Current status: early scaffold.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; application code has just started (a minimal Vite pipeline, ADR-0012) but none of the actual shell/canvas/persistence functionality described below is built yet. Treat every ADR's decision as the plan, not as something already built, unless this file explicitly says otherwise.
+
+## Development
+
+```
+npm install
+npm run dev      # starts the Vite dev server, http://localhost:5173/
+npm run build    # production build to dist/
+npm run preview  # serve that build locally
+```
+
+Requires Node.js (any current LTS; installed here via `nvm`). Right now `npm run dev` only shows a placeholder heading — see "Planned Frontend Module Layout" below for what's actually built vs. still scaffold-only.
 
 ## Core Idea
 
@@ -110,7 +121,7 @@ Conventions worth carrying forward once implementation starts, consistent with e
 
 ## Planned Frontend Module Layout
 
-**Pre-implementation scaffold — directories and one-line `README.md` purpose notes only, no application code yet.** Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
+**Directories and one-line `README.md` purpose notes exist for every module below; none has real implementation code yet** — only the top-level Vite entry (`index.html`/`src/main.js`) does, and that's just a placeholder (see "Development" above). Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
 
 | Path | Role | ADR |
 |------|------|-----|
