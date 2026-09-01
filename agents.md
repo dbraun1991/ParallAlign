@@ -149,9 +149,17 @@ Conventions worth carrying forward once implementation starts, consistent with e
 
 ## Features & Future Work
 
-Captured from ADR discussion so far, not yet designed or built beyond the ADR that names it. Treat as direction, not spec — clarify open questions with the user before implementing rather than guessing at exact behavior.
+Working TODO list for whoever (or whichever session) picks this up next. Items with an ADR are designed but not built; items without one still need direction clarified before implementing rather than guessing at exact behavior.
 
-- **Server-backed git layer.** ADR-0009 chose fully client-side git (`isomorphic-git`/IndexedDB) to reach a working prototype fastest. A server holding the real repo, built in Express/Node (ADR-0011), is the expected next step once multi-device access or real-time collaboration (ADR-0001, already deferred) are actually needed — client-side git has no story for a second device or person seeing the same Issue.
+**Concrete next-session TODOs, roughly in the order they were noted:**
+
+- **Enrich `src/persistence/seed-issues.js`'s example content.** The three seeded Issues currently carry mostly-empty or single-shape canvas content (a lone start event, one ENTITY table, blank System/Interaction diagrams) — fine for exercising the mechanics, but thin for actually judging look-and-feel now that the All-view thumbnails (ADR-0017) and every editor render real content. Flesh out each seed Issue's `views.*.content` with a properly-sized example diagram per engine (a multi-step BPMN process, a small System/Interaction architecture sketch, a richer ER diagram) so testing and demos show the app at a realistic size, not a toy one.
+- **3b: per-view history browsing/restore UI** (ADR-0009) — the data layer already exists (`getIssueHistory`/`readIssueAtCommit` in `src/persistence/git-store.js`); needs a panel to list a view's commit history, show an old version read-only, and restore it.
+- **Live All-view thumbnail updates** (ADR-0017, explicitly deferred there) — thumbnails currently only (re)render when the All view is entered; making them react while another view is being edited elsewhere needs a cross-view invalidation hook that doesn't exist yet.
+- **New-Issue creation UI.** There's still no way to create an Issue from the app itself — the sidebar only ever shows the 3 seeded (or previously-saved) Issues.
+- **Backlog field editing UI.** Title/theme/state/notes are read-only display in the Backlog panel (ADR-0005's data model exists; no edit form was ever built).
+- **Bundle size.** `npm run build` has warned since Step 4 that the main chunk exceeds 500kB (bpmn-js + draw.io-adjacent + Mermaid all in one bundle) — worth revisiting with per-canvas `import()` code-splitting once it's actually felt, not purely on principle.
+- **Server-backed git layer** (ADR-0009/0011) — client-side git (`isomorphic-git`/IndexedDB) was the deliberate starting point; a real Express/Node server is the expected next step once multi-device access or real-time collaboration are actually needed.
 - **Canvas naming finalization.** README/ADR-0001 flag Process/System/Object/Interaction/Backlog naming as provisional. ADR-0009's per-view UUIDs mean this can be resolved later without a data migration — but the rename itself (UI copy, `views.<name>` key vs. `id`, any docs referencing the current names) is still unbuilt work when it happens.
 - **User-facing view/Issue titles distinct from the fixed type-key.** ADR-0009 gives every view its own `id` independent of the `views.<name>` slot it lives in — that decouples identity from naming but doesn't itself add a UI for renaming/relabeling a view or an Issue; whether that's wanted at all is still open.
 - **Cross-issue picker/search UI for copy** (ADR-0010) — the copy mechanics (read HEAD, overwrite, record provenance) are decided; choosing *which* Issue and view to copy from needs its own picker UI, not designed yet.
@@ -161,9 +169,9 @@ Captured from ADR discussion so far, not yet designed or built beyond the ADR th
 
 ## What It Does NOT Do (yet)
 
-Nothing is implemented. Beyond that, per the current ADRs:
-
+- No "create Issue" or Backlog-field-editing UI (see TODOs above) — the 3 seeded Issues and their titles/themes/states/notes are fixed once seeded.
+- No per-view history browsing or restore UI yet, though the data layer supports it (3b above).
 - No real-time multiplayer editing in any of the four tool-backed canvases out of the box (ADR-0001/0002/0003/0004) — explicitly lower priority than format compatibility for the initial feasibility prototype.
 - No cross-canvas element-level linking (ADR-0006, decided against) — association only happens at the Issue level; you can't point from one specific BPMN task to one specific Object-canvas entity.
-- No live cross-issue references (ADR-0010) — copy is a one-time overwrite snapshot, never a link that stays in sync with its source.
+- No live cross-issue references (ADR-0010) — copy is a one-time overwrite snapshot, never a link that stays in sync with its source; the copy feature itself isn't built yet either.
 - No multi-device or multi-user access to the same Issue (ADR-0009) — the git layer is client-side only, for now.
