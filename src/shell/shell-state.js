@@ -129,10 +129,15 @@ export function shellState() {
         this[instanceKey] = null;
       }
       if (shouldMount) {
-        const handle = mountFn(wrapperEl, this.activeIssue.views[view], (content) => {
-          this.activeIssue.views[view].content = content;
-          scheduleSave(this.activeIssue);
-        });
+        const handle = mountFn(
+          wrapperEl,
+          this.activeIssue.views[view],
+          (content) => {
+            this.activeIssue.views[view].content = content;
+            scheduleSave(this.activeIssue);
+          },
+          this.theme
+        );
         this[instanceKey] = { issueId: key, destroy: handle.destroy };
       }
     },

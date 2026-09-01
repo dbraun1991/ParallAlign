@@ -1,15 +1,23 @@
 import mermaid from 'mermaid';
 import { starterDiagram } from './starter-diagram.js';
 
-// securityLevel: 'strict' sanitizes any HTML embedded in diagram labels —
-// relevant since the diagram source is arbitrary user input.
-mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
-
 let renderCounter = 0;
 
 const DEBOUNCE_MS = 400;
 
-export function mountObjectCanvas(container, viewObj, onChange) {
+export function mountObjectCanvas(container, viewObj, onChange, theme) {
+  // securityLevel: 'strict' sanitizes any HTML embedded in diagram labels —
+  // relevant since the diagram source is arbitrary user input. Re-called on
+  // every mount (ADR-0015) since only one Object canvas is ever active and
+  // initialize() just sets global config for the render() calls below —
+  // applied at mount time only, not live if the shell's theme changes while
+  // this view is already open (matches draw.io's same limitation).
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'strict',
+    theme: theme === 'dark' ? 'dark' : 'default',
+  });
+
   container.innerHTML = `
     <div class="object-canvas-layout">
       <textarea class="object-canvas-source" spellcheck="false"></textarea>

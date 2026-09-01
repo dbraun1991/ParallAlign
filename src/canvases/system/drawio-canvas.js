@@ -7,7 +7,7 @@
 
 const DRAWIO_ORIGIN = 'https://embed.diagrams.net';
 
-export function mountDrawioCanvas(container, viewObj, onChange) {
+export function mountDrawioCanvas(container, viewObj, onChange, theme) {
   const iframe = document.createElement('iframe');
   iframe.src = `${DRAWIO_ORIGIN}/?embed=1&proto=json&spin=1`;
   iframe.style.width = '100%';
@@ -27,7 +27,12 @@ export function mountDrawioCanvas(container, viewObj, onChange) {
 
     if (message.event === 'init') {
       iframe.contentWindow.postMessage(
-        JSON.stringify({ action: 'load', xml: viewObj.content || '', autosave: 1 }),
+        JSON.stringify({
+          action: 'load',
+          xml: viewObj.content || '',
+          autosave: 1,
+          dark: theme === 'dark',
+        }),
         DRAWIO_ORIGIN
       );
     } else if (message.event === 'autosave' || message.event === 'save') {
