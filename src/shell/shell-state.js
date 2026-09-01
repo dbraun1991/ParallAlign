@@ -21,6 +21,10 @@ export function shellState() {
     sidebarWidth: 260,
     backlogWidth: 320,
     _mountedProcessKey: null,
+    // Mirrors the data-theme attribute the inline head script already set
+    // (ADR-0014) — never re-derived independently, so this can't disagree
+    // with what's actually rendered.
+    theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
 
     get activeIssue() {
       return this.issues.find((issue) => issue.id === this.activeIssueId) ?? null;
@@ -45,6 +49,16 @@ export function shellState() {
 
     toggleBacklog() {
       this.backlogExpanded = !this.backlogExpanded;
+    },
+
+    toggleTheme() {
+      this.theme = this.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', this.theme);
+      try {
+        localStorage.setItem('parall-align_theme', this.theme);
+      } catch (e) {
+        // private browsing / storage disabled — theme just won't persist
+      }
     },
 
     // Drag-handle resize (ADR-0007): 'sidebar' grows to the right,

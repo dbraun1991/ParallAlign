@@ -1,12 +1,38 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      // Applied synchronously, before first paint, so there's no flash of
+      // the wrong theme while Alpine is still loading (ADR-0014).
+      (function () {
+        try {
+          var saved = localStorage.getItem('parall-align_theme');
+          var theme;
+          if (saved === 'light' || saved === 'dark') {
+            theme = saved;
+          } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme = 'dark';
+          } else {
+            theme = 'light';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Parall-Align</title>
   </head>
   <body>
     <div id="app" x-data="shell()" x-cloak>
+      <button
+        type="button"
+        class="theme-toggle"
+        @click="toggleTheme()"
+        x-text="theme === 'dark' ? 'Light mode' : 'Dark mode'"
+      ></button>
       <div class="shell">
         <aside class="sidebar" :style="`width: ${sidebarWidth}px`">
           <details class="sidebar-collapse" open>

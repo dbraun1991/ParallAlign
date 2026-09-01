@@ -2,6 +2,24 @@
   display: none !important;
 }
 
+.theme-toggle {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--surface-hover);
+}
+
 #app {
   height: 100vh;
 }
