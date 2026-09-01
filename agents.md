@@ -4,7 +4,7 @@
 
 Parall-Align is a webapp for remote teams that need business and technical stakeholders to understand the same system the same way. A project holds a small set of shared, deliberately incomplete visual **canvases** — Backlog, Process, Object, System/Integration, Interaction — that give parallel, cross-linked views of the same backlog item. See `README.md` for the full product framing.
 
-**Current status: Issue-shell skeleton working.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; the Vite pipeline (ADR-0012) and the Issue-shell (`src/shell/`, ADR-0007/0008/0013) run against hardcoded mock Issues (`src/persistence/mock-issues.js`) — Issue selection, view switching, and the Backlog panel's persist/reset-on-activation rules all work. No canvas engine (Process/System/Object/Interaction) is wired in yet, and there's no real persistence — every view shows a "not yet implemented" placeholder pane, and mock data resets on every page load. Treat every ADR's decision as the plan for what's still unbuilt.
+**Current status: Process canvas working.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; the Vite pipeline (ADR-0012), the Issue-shell (`src/shell/`, ADR-0007/0008/0013), and the Process canvas (`src/canvases/process/`, bpmn-js + `@bpmn-io/properties-panel`, ADR-0002/0007) all run against hardcoded mock Issues (`src/persistence/mock-issues.js`). System/Object/Interaction still show a "not yet implemented" placeholder pane, and there's no real persistence yet — all edits (including Process diagram edits) are in-memory only and reset on every page load. Treat every ADR's decision as the plan for what's still unbuilt.
 
 ## Development
 
@@ -123,7 +123,7 @@ Conventions worth carrying forward once implementation starts, consistent with e
 
 ## Planned Frontend Module Layout
 
-**`src/shell/`, `src/persistence/mock-issues.js`, and `src/css/` have real implementation code; the four `src/canvases/*/` and `src/copy/` are still directories with only a purpose-note `README.md` each.** Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
+**`src/shell/`, `src/persistence/mock-issues.js`, `src/css/`, and `src/canvases/process/` have real implementation code; `src/canvases/system/`, `src/canvases/interaction/`, `src/canvases/object/`, and `src/copy/` are still directories with only a purpose-note `README.md` each.** Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
 
 | Path | Role | ADR |
 |------|------|-----|
