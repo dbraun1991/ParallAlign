@@ -17,5 +17,6 @@ Numbered, append-only decision log for Parall-Align. Each ADR captures the conte
 | [0011](0011-server-backend-express.md) | Server-backed persistence: Express (Node), not a second-language backend | Proposed |
 | [0012](0012-frontend-build-tooling-vite.md) | Frontend build tooling: npm + Vite, not CDN script tags | Proposed |
 | [0013](0013-shell-ui-reactivity-alpinejs.md) | Shell UI reactivity: Alpine.js | Proposed |
+| [0014](0014-theme-toggle-light-and-dark-mode.md) | Theme toggle: light and dark mode | Proposed |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is not yet finalized as of ADR-0001 — these ADRs use the current README naming and should be updated if it changes.
