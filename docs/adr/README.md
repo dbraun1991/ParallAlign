@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Numbered, append-only decision log for ParallAlign. Each ADR captures the context, the decision, and its consequences at the time it was made — if a decision changes later, add a new ADR that supersedes it rather than editing the old one.
+Numbered, append-only decision log for Parall-Align. Each ADR captures the context, the decision, and its consequences at the time it was made — if a decision changes later, add a new ADR that supersedes it rather than editing the old one.
 
 | # | Title | Status |
 |---|---|---|

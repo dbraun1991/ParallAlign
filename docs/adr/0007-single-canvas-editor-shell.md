@@ -41,5 +41,5 @@ Separately, the bpmn.io ecosystem ships an official **properties panel** — [`@
 
 ## Alternatives considered
 
-- **Modal-based element property editing**, rather than a docked panel. Rejected for Process Canvas: a docked panel keeps attributes visible while browsing the canvas, where a modal would have to be reopened for every element; a modal-based picker is only really justified for something like a cross-file link picker, a use case ADR-0006 has already decided ParallAlign doesn't need.
+- **Modal-based element property editing**, rather than a docked panel. Rejected for Process Canvas: a docked panel keeps attributes visible while browsing the canvas, where a modal would have to be reopened for every element; a modal-based picker is only really justified for something like a cross-file link picker, a use case ADR-0006 has already decided Parall-Align doesn't need.
 - **Hand-built properties panel** instead of `@bpmn-io/properties-panel`. Rejected: ADR-0001's stated priority is mature "for free" tooling over reimplementation, and the official panel is a closer fit than reproducing it.

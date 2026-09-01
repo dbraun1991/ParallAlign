@@ -9,7 +9,7 @@
 
 ADR-0001 defined two entry points: a read-only **Central View** (a 2×2 grid of Process/System/Object/Interaction with Backlog as a full-height column to its right) and, reached by navigating from it, a **single-canvas edit view** where one canvas opens full-screen.
 
-That model treated Backlog as one region of a specific overview screen — visible in the Central View grid, but not carried into the single-canvas edit view. In practice, every ParallAlign Issue wraps its four canvases *and* its Backlog entry together as one unit (README) — Backlog is not just one grid cell among four others, it's the always-relevant index into the rest, per its own role described in ADR-0005 ("the single interface between people doing the analysis and people making the call"). Confining it to one screen undersells that role.
+That model treated Backlog as one region of a specific overview screen — visible in the Central View grid, but not carried into the single-canvas edit view. In practice, every Parall-Align Issue wraps its four canvases *and* its Backlog entry together as one unit (README) — Backlog is not just one grid cell among four others, it's the always-relevant index into the rest, per its own role described in ADR-0005 ("the single interface between people doing the analysis and people making the call"). Confining it to one screen undersells that role.
 
 ## Decision
 

@@ -8,7 +8,7 @@
 
 Two new requirements: **every view needs its own history** (browse and revisit past versions of that one canvas, independent of the other views), and there needs to be a **JSON description of an Issue** that makes following changes and revisiting old versions possible at all — i.e. the persisted representation has to be designed with versioning in mind from the start, not bolted on later.
 
-ADR-0002 and ADR-0004 already lean on their formats being plain-text and "diffable in git." That's a hint worth taking literally rather than reinventing a custom version-log format: **git commit history already is a change log with revisit-any-point built in**, and every one of the five canvases' native formats (BPMN XML, mxGraph XML, Mermaid text, and ParallAlign's own backlog fields) is plain text, so git diffs against them meaningfully.
+ADR-0002 and ADR-0004 already lean on their formats being plain-text and "diffable in git." That's a hint worth taking literally rather than reinventing a custom version-log format: **git commit history already is a change log with revisit-any-point built in**, and every one of the five canvases' native formats (BPMN XML, mxGraph XML, Mermaid text, and Parall-Align's own backlog fields) is plain text, so git diffs against them meaningfully.
 
 ## Decision
 
@@ -36,7 +36,7 @@ Represent each Issue as **one JSON document**, `issues/<issueId>.json`:
 - `id` (top-level) is the Issue's UUID, assigned once at creation and never reused — and doubles as the Backlog entry's own identity, since the Backlog entry *is* this document's top-level fields (title/theme/state/notes), not a separate object. No second ID is needed for it.
 - **Every view also carries its own `id` (UUID)**, assigned once when that view is first created and never reused or regenerated, independent of the `views.<name>` key it's currently stored under and independent of any display title. This matters because canvas naming is explicitly **not yet finalized** (`docs/adr/README.md`) — if "Process"/`views.process` is ever renamed as a product decision, every reference that currently exists (copy provenance, ADR-0010; any future history/diff tooling keyed on it) should still resolve correctly, because it points at the view's `id`, not at the string `"process"`. Names — the `views.<name>` key today, or a user-facing title later — can change; the `id` stays clean.
 - `views.<name>.content` holds each canvas engine's own native persisted format verbatim (ADR-0002/0003/0004) — the JSON wrapper doesn't reinterpret or restructure it, so an exported `content` string is still a valid standalone `.bpmn`/`.drawio`/Mermaid file on its own.
-- The Backlog entry (ADR-0005: title, detail/notes, theme, state) lives as top-level fields on the same document rather than a fifth `views` entry, since it's ParallAlign-native data, not a wrapped external format.
+- The Backlog entry (ADR-0005: title, detail/notes, theme, state) lives as top-level fields on the same document rather than a fifth `views` entry, since it's Parall-Align-native data, not a wrapped external format.
 
 **Versioning**: the `issues/` directory is a git repository; every save is one commit touching one `issues/<issueId>.json` file. Git commit history *is* the version log — no separate custom version-number field or snapshot array inside the JSON itself.
 
