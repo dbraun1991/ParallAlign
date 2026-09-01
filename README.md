@@ -4,6 +4,18 @@
 It gives a team a small set of shared, deliberately incomplete visual canvases, so that planning and prioritization decisions are made from a common ground.
 
 
+## Running Locally
+
+```
+npm install
+npm run dev      # starts the Vite dev server, http://localhost:5173/
+npm run build    # production build to dist/
+npm run preview  # serve that build locally
+```
+
+Requires Node.js (any current LTS).
+
+
 ## Nameing
 
 **Parall-Align** is a portmanteau of *parallax* and *align* — chosen to name the exact mechanic at the core of the product:
