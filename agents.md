@@ -108,6 +108,24 @@ Conventions worth carrying forward once implementation starts, consistent with e
 - **No framework-default confirm/alert** — sibling projects use a promise-based custom dialog module (`OrgVisualizr/js/dialog.js`) instead of native `confirm()`/`alert()`; adopt the same if/when Object/Backlog canvases need confirmation prompts.
 - **Theme via CSS custom properties** on `:root`, `data-theme` attribute for light/dark, set before first paint to avoid a flash of the wrong theme (`OrgVisualizr/agents.md`'s "Theming" section) — apply this to the Issue shell chrome (ADR-0007/0008), independent of whatever theming each embedded engine (bpmn-js/draw.io/Mermaid) supports natively.
 
+## Planned Frontend Module Layout
+
+**Pre-implementation scaffold — directories and one-line `README.md` purpose notes only, no application code yet.** Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
+
+| Path | Role | ADR |
+|------|------|-----|
+| `src/shell/issue-sidebar/` | Left panel: searchable Issue list, resizable + mobile-collapsible | 0007, 0008 |
+| `src/shell/view-switcher/` | Main area: All (2×2 read-only overview) + four single-canvas editor views | 0001, 0008 |
+| `src/shell/backlog-panel/` | Right panel: current Issue's Backlog Canvas entry, docked, global minimize-with-reset-on-activation | 0005, 0007, 0008 |
+| `src/canvases/process/` | Process Canvas: bpmn-js + `@bpmn-io/properties-panel` | 0002, 0007 |
+| `src/canvases/system/` | System/Integration Canvas: draw.io embed | 0003 |
+| `src/canvases/interaction/` | Interaction Canvas: draw.io embed | 0003 |
+| `src/canvases/object/` | Object Canvas: Mermaid text+preview | 0004 |
+| `src/persistence/` | Issue JSON model + client-side git (`isomorphic-git`/IndexedDB), per-view history diffing | 0009 |
+| `src/copy/` | Cross-issue copy mechanics (HEAD-only, overwrite, `copiedFrom` provenance) | 0010 |
+| `src/dialog/` | Promise-based modal system (no native `confirm()`/`alert()`) | sibling convention |
+| `src/css/` | One stylesheet per concern, CSS custom properties + `data-theme` | sibling convention |
+
 ## Features & Future Work
 
 Captured from ADR discussion so far, not yet designed or built beyond the ADR that names it. Treat as direction, not spec — clarify open questions with the user before implementing rather than guessing at exact behavior.
