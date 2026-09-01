@@ -4,7 +4,7 @@
 
 Parall-Align is a webapp for remote teams that need business and technical stakeholders to understand the same system the same way. A project holds a small set of shared, deliberately incomplete visual **canvases** — Backlog, Process, Object, System/Integration, Interaction — that give parallel, cross-linked views of the same backlog item. See `README.md` for the full product framing.
 
-**Current status: Process canvas + theme toggle working.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; the Vite pipeline (ADR-0012), the Issue-shell (`src/shell/`, ADR-0007/0008/0013), the Process canvas (`src/canvases/process/`, bpmn-js + `@bpmn-io/properties-panel`, ADR-0002/0007), and the light/dark toggle (ADR-0014) all work against hardcoded mock Issues (`src/persistence/mock-issues.js`). System/Object/Interaction still show a "not yet implemented" placeholder pane, and there's no real persistence yet — all edits (including Process diagram edits) are in-memory only and reset on every page load. Treat every ADR's decision as the plan for what's still unbuilt.
+**Current status: all five views working.** Product framing (`README.md`) and architecture decisions (`docs/adr/`) are in place; the Vite pipeline (ADR-0012), the Issue-shell (`src/shell/`, ADR-0007/0008/0013), the light/dark toggle (ADR-0014), and all four canvas engines — Process (bpmn-js + `@bpmn-io/properties-panel`, ADR-0002/0007), System/Interaction (draw.io embed, ADR-0003), Object (Mermaid text+preview, ADR-0004) — all work against hardcoded mock Issues (`src/persistence/mock-issues.js`). There's no real persistence yet — every edit across every canvas is in-memory only and resets on every page load. Treat every ADR's decision as the plan for what's still unbuilt (real persistence, cross-issue copy, canvas naming finalization, and the rest of "Features & Future Work" below).
 
 ## Development
 
@@ -125,7 +125,7 @@ Conventions worth carrying forward once implementation starts, consistent with e
 
 ## Planned Frontend Module Layout
 
-**`src/shell/`, `src/persistence/mock-issues.js`, `src/css/`, and `src/canvases/process/` have real implementation code; `src/canvases/system/`, `src/canvases/interaction/`, `src/canvases/object/`, and `src/copy/` are still directories with only a purpose-note `README.md` each.** Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
+**`src/shell/`, `src/persistence/mock-issues.js`, `src/css/`, and all four `src/canvases/*/` have real implementation code; only `src/copy/` is still a directory with just a purpose-note `README.md`.** `src/canvases/interaction/` has no implementation file of its own — it shares `src/canvases/system/drawio-canvas.js` (ADR-0003: one integration, two canvases). Built on npm + Vite (ADR-0012); `server/` for the Express backend (ADR-0011) intentionally not yet created, since that ADR defers the server itself until multi-device/collaboration work starts — scaffolding it now would misrepresent it as active.
 
 | Path | Role | ADR |
 |------|------|-----|
