@@ -92,6 +92,7 @@ Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
 | `docs/adr/0014-*.md` | Theme toggle: light and dark mode |
 | `docs/adr/0015-*.md` | Canvas engines follow the shell's theme toggle (Process portion superseded by 0016) |
 | `docs/adr/0016-*.md` | Process canvas stays light-themed regardless of shell theme |
+| `docs/adr/0017-*.md` | All-view renders real per-canvas thumbnails |
 
 ## Architecture Decisions
 
@@ -113,6 +114,7 @@ Cross-issue copy (ADR-0010): copy a view or the Backlog entry from another
 | [0014](docs/adr/0014-theme-toggle-light-and-dark-mode.md) | Light/dark toggle for the shell chrome, following `OrgVisualizr`'s FOUC-prevention/single-source-of-truth pattern with a `prefers-color-scheme` first-visit default added; canvas engines' own theming out of scope |
 | [0015](docs/adr/0015-canvas-engines-follow-theme-toggle.md) | Un-defers ADR-0014's canvas-theming exclusion for three specific mechanisms: bpmn-js/properties-panel via CSS custom properties (live, Process portion later superseded by 0016), draw.io via its `dark:true` load option, Mermaid via `initialize({theme})` — both mount-time only; shape fill/stroke colors intentionally untouched |
 | [0016](docs/adr/0016-process-canvas-stays-light-themed.md) | Process canvas always renders light regardless of shell theme — diagrams should look consistent to every viewer; System/Interaction/Object's dark theming from ADR-0015 is unaffected |
+| [0017](docs/adr/0017-all-view-thumbnails.md) | All-view tiles render real SVG thumbnails per engine (bpmn-js `Viewer.saveSVG()`, Mermaid's own render, draw.io's `load`→ack→`export` postMessage sequence via a hidden iframe), content-hash cached; click-through to the matching view; live updates from other views' edits explicitly deferred |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is **not yet finalized** (ADR-0001) — code and docs alike currently use the README naming; check `docs/adr/README.md` before assuming it's settled. This is exactly why views and the Backlog entry carry their own UUIDs (ADR-0009): identity must survive a naming decision that hasn't happened yet.
 

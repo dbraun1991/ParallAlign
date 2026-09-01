@@ -20,5 +20,6 @@ Numbered, append-only decision log for Parall-Align. Each ADR captures the conte
 | [0014](0014-theme-toggle-light-and-dark-mode.md) | Theme toggle: light and dark mode | Proposed |
 | [0015](0015-canvas-engines-follow-theme-toggle.md) | Canvas engines follow the shell's theme toggle | Proposed — Process portion superseded by 0016 |
 | [0016](0016-process-canvas-stays-light-themed.md) | Process canvas stays light-themed regardless of shell theme | Proposed |
+| [0017](0017-all-view-thumbnails.md) | All-view renders real per-canvas thumbnails | Proposed |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is not yet finalized as of ADR-0001 — these ADRs use the current README naming and should be updated if it changes.
