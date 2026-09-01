@@ -1,0 +1,42 @@
+import { initRepo, listIssueFiles, readIssueFile, writeIssueFile, commitIssue } from './git-store.js';
+import { seedIssues } from './seed-issues.js';
+
+const SAVE_DEBOUNCE_MS = 1500;
+const saveTimers = new Map(); // issueId -> setTimeout handle
+
+export async function loadAllIssues() {
+  await initRepo();
+
+  let files = await listIssueFiles();
+  if (files.length === 0) {
+    // True first run — seed the example issues so the app isn't a dead end
+    // (there's still no "create issue" UI).
+    for (const issue of seedIssues) {
+      const filename = `${issue.id}.json`;
+      await writeIssueFile(filename, issue);
+      await commitIssue(filename, `seed: ${issue.title}`);
+    }
+    files = await listIssueFiles();
+  }
+
+  return Promise.all(files.map((filename) => readIssueFile(filename)));
+}
+
+export function scheduleSave(issue) {
+  const existingTimer = saveTimers.get(issue.id);
+  if (existingTimer) clearTimeout(existingTimer);
+
+  const timer = setTimeout(async () => {
+    saveTimers.delete(issue.id);
+    issue.updatedAt = new Date().toISOString();
+    const filename = `${issue.id}.json`;
+    try {
+      await writeIssueFile(filename, issue);
+      await commitIssue(filename, `update: ${issue.title}`);
+    } catch (error) {
+      console.error('Failed to save issue', issue.id, error);
+    }
+  }, SAVE_DEBOUNCE_MS);
+
+  saveTimers.set(issue.id, timer);
+}

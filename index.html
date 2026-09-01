@@ -33,7 +33,10 @@
         @click="toggleTheme()"
         x-text="theme === 'dark' ? 'Light mode' : 'Dark mode'"
       ></button>
-      <div class="shell">
+      <div class="loading-state" x-show="loading">
+        <p>Loading…</p>
+      </div>
+      <div class="shell" x-show="!loading">
         <aside class="sidebar" :style="`width: ${sidebarWidth}px`">
           <details class="sidebar-collapse" open>
             <summary class="sidebar-summary">Issues</summary>

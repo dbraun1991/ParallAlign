@@ -1,9 +1,8 @@
-// Temporary stand-in for the real Issue data source. Matches ADR-0009's JSON
-// shape exactly so it can be swapped for the real isomorphic-git-backed
-// persistence layer (Step 3 of the implementation roadmap) without the shell
-// having to change how it reads issue data.
+// Used only to seed the git-backed store (issue-store.js) on a true first
+// run (empty /issues directory) — not a live data source. Matches ADR-0009's
+// JSON shape exactly.
 
-export const mockIssues = [
+export const seedIssues = [
   {
     id: 'issue-1',
     schemaVersion: 1,

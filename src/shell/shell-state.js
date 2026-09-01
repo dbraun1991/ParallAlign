@@ -1,4 +1,4 @@
-import { mockIssues } from '../persistence/mock-issues.js';
+import { loadAllIssues, scheduleSave } from '../persistence/issue-store.js';
 import { mountProcessCanvas } from '../canvases/process/process-canvas.js';
 import { mountDrawioCanvas } from '../canvases/system/drawio-canvas.js';
 import { mountObjectCanvas } from '../canvases/object/object-canvas.js';
@@ -25,7 +25,8 @@ const VIEWS = ['all', 'process', 'system', 'object', 'interaction'];
 //     setView calls until the next selectIssue call resets it again.
 export function shellState() {
   return {
-    issues: mockIssues,
+    issues: [],
+    loading: true,
     activeIssueId: null,
     activeView: 'all',
     backlogExpanded: true,
@@ -40,6 +41,15 @@ export function shellState() {
     // (ADR-0014) — never re-derived independently, so this can't disagree
     // with what's actually rendered.
     theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
+
+    // Alpine's special lifecycle method — called automatically once this
+    // component initializes. Issue loading is async (real git/IndexedDB
+    // access, ADR-0009), so `issues` can't be populated synchronously the
+    // way the mock array was.
+    async init() {
+      this.issues = await loadAllIssues();
+      this.loading = false;
+    },
 
     get activeIssue() {
       return this.issues.find((issue) => issue.id === this.activeIssueId) ?? null;
@@ -121,6 +131,7 @@ export function shellState() {
       if (shouldMount) {
         const handle = mountFn(wrapperEl, this.activeIssue.views[view], (content) => {
           this.activeIssue.views[view].content = content;
+          scheduleSave(this.activeIssue);
         });
         this[instanceKey] = { issueId: key, destroy: handle.destroy };
       }
