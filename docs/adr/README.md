@@ -15,5 +15,6 @@ Numbered, append-only decision log for ParallAlign. Each ADR captures the contex
 | [0009](0009-issue-persistence-and-versioning.md) | Issue persistence: one JSON document per Issue, git-backed per-view history | Proposed |
 | [0010](0010-cross-issue-copy.md) | Cross-issue copy: always latest version, overwrite, git-recorded provenance | Proposed |
 | [0011](0011-server-backend-express.md) | Server-backed persistence: Express (Node), not a second-language backend | Proposed |
+| [0012](0012-frontend-build-tooling-vite.md) | Frontend build tooling: npm + Vite, not CDN script tags | Proposed |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is not yet finalized as of ADR-0001 — these ADRs use the current README naming and should be updated if it changes.
