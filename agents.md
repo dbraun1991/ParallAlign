@@ -154,6 +154,16 @@ Working TODO list for whoever (or whichever session) picks this up next. Items w
 **Concrete next-session TODOs, roughly in the order they were noted:**
 
 - **Enrich `src/persistence/seed-issues.js`'s example content.** The three seeded Issues currently carry mostly-empty or single-shape canvas content (a lone start event, one ENTITY table, blank System/Interaction diagrams) — fine for exercising the mechanics, but thin for actually judging look-and-feel now that the All-view thumbnails (ADR-0017) and every editor render real content. Flesh out each seed Issue's `views.*.content` with a properly-sized example diagram per engine (a multi-step BPMN process, a small System/Interaction architecture sketch, a richer ER diagram) so testing and demos show the app at a realistic size, not a toy one.
+- **All-view "focus one tile" layout.** Clicking one of the four tiles enlarges it into a big pane while the other three stay visible, shrunk into a stacked small-tile column alongside it — a focus mode within All, not the same thing as fully navigating away to that view's single-canvas editor (ADR-0008), and not the same as today's click-through (ADR-0017, which does navigate away). The core requirement: focusing one view must never hide the other three. Two layout orientations were sketched, not decided between:
+  ```
+  right-side big:        left-side big:
+  s |B                   B|s
+  ---B                   B--
+  s |B                   B|s
+  ---B                   B--
+  s |B                   B|s
+  ```
+  Open questions for whoever picks this up: which orientation (or does the big pane's side follow which tile was clicked?); does the enlarged pane host the real interactive editor (bpmn-js/draw.io/Mermaid, live-editable) or just a bigger static thumbnail; and how this interacts with the view-switcher tabs (All/Process/System/Object/Interaction) already at the top of the shell.
 - **3b: per-view history browsing/restore UI** (ADR-0009) — the data layer already exists (`getIssueHistory`/`readIssueAtCommit` in `src/persistence/git-store.js`); needs a panel to list a view's commit history, show an old version read-only, and restore it.
 - **Live All-view thumbnail updates** (ADR-0017, explicitly deferred there) — thumbnails currently only (re)render when the All view is entered; making them react while another view is being edited elsewhere needs a cross-view invalidation hook that doesn't exist yet.
 - **New-Issue creation UI.** There's still no way to create an Issue from the app itself — the sidebar only ever shows the 3 seeded (or previously-saved) Issues.
