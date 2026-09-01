@@ -1,4 +1,5 @@
 import { mockIssues } from '../persistence/mock-issues.js';
+import { mountProcessCanvas, unmountProcessCanvas } from '../canvases/process/process-canvas.js';
 
 const VIEWS = ['all', 'process', 'system', 'object', 'interaction'];
 
@@ -19,6 +20,7 @@ export function shellState() {
     sidebarQuery: '',
     sidebarWidth: 260,
     backlogWidth: 320,
+    _mountedProcessKey: null,
 
     get activeIssue() {
       return this.issues.find((issue) => issue.id === this.activeIssueId) ?? null;
@@ -67,6 +69,29 @@ export function shellState() {
       };
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
+    },
+
+    // Bound via x-effect on the Process view's container, re-evaluated on
+    // every activeView/activeIssueId change. No-ops unless the desired
+    // mounted issue actually changed, so repeated re-evaluations (Alpine
+    // re-runs x-effect on any reactive read inside it) don't remount.
+    syncProcessCanvas(wrapperEl) {
+      const shouldMount = this.activeView === 'process' && this.activeIssue;
+      const key = shouldMount ? this.activeIssue.id : null;
+      if (key === this._mountedProcessKey) return;
+
+      if (this._mountedProcessKey) {
+        unmountProcessCanvas();
+        this._mountedProcessKey = null;
+      }
+      if (shouldMount) {
+        this._mountedProcessKey = key;
+        const canvasEl = wrapperEl.querySelector('.process-canvas-container');
+        const propertiesEl = wrapperEl.querySelector('.process-properties-panel');
+        mountProcessCanvas(canvasEl, propertiesEl, this.activeIssue.views.process, (xml) => {
+          this.activeIssue.views.process.content = xml;
+        });
+      }
     },
   };
 }
