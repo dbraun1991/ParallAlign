@@ -61,3 +61,22 @@ export function mountObjectCanvas(container, viewObj, onChange, theme) {
     },
   };
 }
+
+// ADR-0017: one-shot SVG render for the All view — same mermaid.render call
+// the live preview above uses, no separate viewer needed (Mermaid already
+// returns raw SVG markup directly).
+export async function renderObjectThumbnail(text, theme) {
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'strict',
+    theme: theme === 'dark' ? 'dark' : 'default',
+  });
+
+  try {
+    const id = `mermaid-thumbnail-${renderCounter++}`;
+    const { svg } = await mermaid.render(id, text || starterDiagram);
+    return svg;
+  } catch (error) {
+    return '<p class="object-canvas-error">Invalid diagram syntax</p>';
+  }
+}

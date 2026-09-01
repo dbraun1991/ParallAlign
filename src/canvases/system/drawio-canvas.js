@@ -49,3 +49,52 @@ export function mountDrawioCanvas(container, viewObj, onChange, theme) {
     },
   };
 }
+
+// ADR-0017: one-shot SVG export for the All view, via a temporary hidden
+// iframe. Confirmed sequence (drawio.com embed-mode FAQ): init -> we send
+// load -> editor acks with its own 'load' event once actually rendered
+// (the real sync point, not just fire-and-forget) -> we send export -> it
+// responds with a ready-to-use data: URI (not raw SVG markup, unlike
+// bpmn-js/Mermaid's thumbnails).
+export function renderDrawioThumbnail(xml, theme) {
+  return new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '300px';
+    iframe.style.height = '200px';
+    iframe.style.border = 'none';
+    iframe.src = `${DRAWIO_ORIGIN}/?embed=1&proto=json&spin=1`;
+    document.body.appendChild(iframe);
+
+    function cleanup() {
+      window.removeEventListener('message', handleMessage);
+      iframe.remove();
+    }
+
+    function handleMessage(event) {
+      if (event.origin !== DRAWIO_ORIGIN || event.source !== iframe.contentWindow) return;
+
+      let message;
+      try {
+        message = JSON.parse(event.data);
+      } catch (error) {
+        return;
+      }
+
+      if (message.event === 'init') {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ action: 'load', xml: xml || '', dark: theme === 'dark' }),
+          DRAWIO_ORIGIN
+        );
+      } else if (message.event === 'load') {
+        iframe.contentWindow.postMessage(JSON.stringify({ action: 'export', format: 'svg' }), DRAWIO_ORIGIN);
+      } else if (message.event === 'export') {
+        cleanup();
+        resolve(message.data);
+      }
+    }
+
+    window.addEventListener('message', handleMessage);
+  });
+}

@@ -84,22 +84,26 @@
           </nav>
           <div class="view-content">
             <template x-if="activeView === 'all'">
-              <div class="all-grid">
-                <div class="all-cell">
+              <div class="all-grid" x-effect="renderAllThumbnails()">
+                <div class="all-cell" @click="setView('process')">
                   <h3>Process</h3>
-                  <p class="placeholder">not yet implemented</p>
+                  <div class="all-cell-thumbnail" x-show="thumbnails.process" x-html="thumbnails.process"></div>
+                  <p class="placeholder" x-show="!thumbnails.process">Rendering…</p>
                 </div>
-                <div class="all-cell">
+                <div class="all-cell" @click="setView('system')">
                   <h3>System/Integration</h3>
-                  <p class="placeholder">not yet implemented</p>
+                  <img class="all-cell-thumbnail" x-show="thumbnails.system" :src="thumbnails.system" alt="" />
+                  <p class="placeholder" x-show="!thumbnails.system">Rendering…</p>
                 </div>
-                <div class="all-cell">
+                <div class="all-cell" @click="setView('object')">
                   <h3>Object</h3>
-                  <p class="placeholder">not yet implemented</p>
+                  <div class="all-cell-thumbnail" x-show="thumbnails.object" x-html="thumbnails.object"></div>
+                  <p class="placeholder" x-show="!thumbnails.object">Rendering…</p>
                 </div>
-                <div class="all-cell">
+                <div class="all-cell" @click="setView('interaction')">
                   <h3>Interaction</h3>
-                  <p class="placeholder">not yet implemented</p>
+                  <img class="all-cell-thumbnail" x-show="thumbnails.interaction" :src="thumbnails.interaction" alt="" />
+                  <p class="placeholder" x-show="!thumbnails.interaction">Rendering…</p>
                 </div>
               </div>
             </template>

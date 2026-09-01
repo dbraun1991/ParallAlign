@@ -1,4 +1,5 @@
 import BpmnModeler from 'bpmn-js/lib/Modeler';
+import BpmnViewer from 'bpmn-js/lib/Viewer';
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import { starterDiagram } from './starter-diagram.js';
 
@@ -35,4 +36,27 @@ export function mountProcessCanvas(canvasEl, propertiesEl, viewObj, onChange) {
       modeler.destroy();
     },
   };
+}
+
+// ADR-0017: one-shot SVG render for the All view. The container must be
+// positioned off-screen, not display:none — saveSVG() internally measures
+// the diagram via getBBox(), which needs real layout to have happened.
+export async function renderProcessThumbnail(xml) {
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.left = '-9999px';
+  container.style.width = '300px';
+  container.style.height = '200px';
+  document.body.appendChild(container);
+
+  const viewer = new BpmnViewer({ container });
+
+  try {
+    await viewer.importXML(xml || starterDiagram);
+    const { svg } = await viewer.saveSVG();
+    return svg;
+  } finally {
+    viewer.destroy();
+    container.remove();
+  }
 }

@@ -2,6 +2,7 @@ import { loadAllIssues, scheduleSave } from '../persistence/issue-store.js';
 import { mountProcessCanvas } from '../canvases/process/process-canvas.js';
 import { mountDrawioCanvas } from '../canvases/system/drawio-canvas.js';
 import { mountObjectCanvas } from '../canvases/object/object-canvas.js';
+import { renderAllThumbnails as renderThumbnails } from '../canvases/thumbnails.js';
 
 // Process needs two child containers (canvas + properties panel); the
 // other engines mount straight into the single wrapper element. Adapting
@@ -37,6 +38,7 @@ export function shellState() {
     _systemInstance: null,
     _interactionInstance: null,
     _objectInstance: null,
+    thumbnails: { process: null, system: null, interaction: null, object: null },
     // Mirrors the data-theme attribute the inline head script already set
     // (ADR-0014) — never re-derived independently, so this can't disagree
     // with what's actually rendered.
@@ -156,6 +158,19 @@ export function shellState() {
 
     syncObjectCanvas(el) {
       this._syncCanvas('object', el, mountObjectCanvas, '_objectInstance');
+    },
+
+    // Bound via x-effect on the All view's wrapping element (ADR-0017).
+    // Reruns whenever activeIssueId changes while activeView === 'all' —
+    // no destroy/handle needed here, unlike the four single-canvas syncs
+    // above, since rendering a thumbnail is a one-shot async call, not a
+    // persistent mounted instance. thumbnails.js's own content-hash cache
+    // handles avoiding redundant re-renders.
+    async renderAllThumbnails() {
+      if (!this.activeIssue) return;
+      const issue = this.activeIssue;
+      this.thumbnails = { process: null, system: null, interaction: null, object: null };
+      this.thumbnails = await renderThumbnails(issue, this.theme);
     },
   };
 }
