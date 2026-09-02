@@ -1,6 +1,7 @@
 # ADR-0009: Issue persistence format — one JSON document per Issue, git-backed per-view history
 
 - Status: Proposed
+- Issue-schema portion superseded by: [ADR-0018](0018-issue-and-backlog-entries-data-model.md) — Issue narrows to `{id, name, status}` plus `views` and a new `backlogEntries` list (`schemaVersion: 2`); this ADR's git-backed persistence and per-view history-diffing model are unaffected.
 - Date: 2026-09-01
 - Relates to: [ADR-0002](0002-process-canvas-bpmn-js.md), [ADR-0003](0003-system-integration-and-interaction-canvases-drawio.md), [ADR-0004](0004-object-canvas-mermaid.md), [ADR-0005](0005-backlog-canvas-custom-list.md), [ADR-0008](0008-issue-shell-view-switcher-and-persistent-backlog-panel.md)
 

@@ -1,6 +1,7 @@
 # ADR-0005: Backlog Canvas — custom list component
 
 - Status: Proposed
+- Item/state model superseded by: [ADR-0018](0018-issue-and-backlog-entries-data-model.md) — Backlog becomes a list of many `{id, name, description}` entries, no per-entry status; this ADR's "custom-built, no external format" architectural call stands unchanged.
 - Date: 2026-09-01
 - Supersedes/relates to: [ADR-0001](0001-canvas-architecture-and-central-view.md)
 

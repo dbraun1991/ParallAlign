@@ -1,6 +1,7 @@
 # ADR-0010: Cross-issue copy — always latest version, overwrite, git-recorded provenance
 
 - Status: Proposed
+- Superseded by: [ADR-0019](0019-cross-issue-copy-views-and-entries.md) — view-copy mechanics below are kept verbatim; Backlog-entry copy changes from overwrite to list-append (ADR-0018 made Backlog a list, not a singleton), and whole-Issue copy is now explicitly rejected rather than merely undesigned.
 - Date: 2026-09-01
 - Relates to: [ADR-0006](0006-cross-canvas-linking.md), [ADR-0009](0009-issue-persistence-and-versioning.md)
 
