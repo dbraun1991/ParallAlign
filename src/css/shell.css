@@ -167,9 +167,40 @@
 
 .view-tabs {
   display: flex;
+  align-items: center;
   gap: 4px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
+}
+
+/* Issue name/status (ADR-0018) — moved here from the Backlog panel, since
+   an Issue is now just these two fields. */
+.issue-header {
+  display: flex;
+  gap: 6px;
+  padding-right: 12px;
+  margin-right: 8px;
+  border-right: 1px solid var(--border);
+}
+
+.issue-name-field {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  width: 200px;
+}
+
+.issue-status-field {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  text-transform: capitalize;
 }
 
 .view-tab {
@@ -199,8 +230,14 @@
   padding: 16px;
 }
 
-.history-toggle {
+.view-tabs-actions {
   margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.history-toggle,
+.copy-toggle {
   background: none;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -210,7 +247,8 @@
   cursor: pointer;
 }
 
-.history-toggle:hover {
+.history-toggle:hover,
+.copy-toggle:hover {
   color: var(--text);
 }
 
@@ -291,6 +329,65 @@
   padding: 16px;
   color: var(--text-muted);
   font-size: 13px;
+}
+
+.copy-provenance {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ─── Copy picker (ADR-0019) ─────────────────────── */
+
+.copy-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 29;
+}
+
+.copy-picker {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  max-width: 90vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 30;
+  overflow: hidden;
+}
+
+.copy-picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.copy-picker-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.copy-picker-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.copy-picker-body .history-restore {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.copy-picker-body .history-restore:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .all-grid {
@@ -450,12 +547,6 @@ img.all-cell-thumbnail {
   padding: 68px 16px 16px;
 }
 
-.backlog-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .backlog-field {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -463,33 +554,99 @@ img.all-cell-thumbnail {
   border-radius: 6px;
   padding: 8px 10px;
   font-family: inherit;
+  width: 100%;
 }
 
-.backlog-title-field {
-  font-size: 16px;
+/* ─── Backlog entries list (ADR-0018) ────────────── */
+
+.backlog-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backlog-entries-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.backlog-entries-header h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.add-entry-form {
+  display: flex;
+  gap: 6px;
+}
+
+.add-entry-button {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.add-entry-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.backlog-entry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.backlog-entry {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.backlog-entry-header {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.backlog-entry-name-field {
+  font-size: 14px;
   font-weight: 600;
 }
 
-.backlog-meta-fields {
-  display: flex;
-  gap: 8px;
-}
-
-.backlog-theme-field {
-  flex: 1 1 auto;
+.backlog-entry-description-field {
   font-size: 13px;
-}
-
-.backlog-state-field {
-  flex: 0 0 auto;
-  font-size: 13px;
-  text-transform: capitalize;
-}
-
-.backlog-notes-field {
-  font-size: 14px;
-  min-height: 120px;
+  min-height: 60px;
   resize: vertical;
+}
+
+.backlog-entry-delete {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.backlog-entry-delete:hover {
+  color: var(--accent);
+}
+
+.backlog-empty {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 /* ─── Resize handles ─────────────────────────────── */

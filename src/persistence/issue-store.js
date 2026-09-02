@@ -5,6 +5,7 @@ import {
   writeIssueFile,
   commitIssue,
   readIssueAtCommit,
+  getHeadCommitOid,
 } from './git-store.js';
 import { seedIssues } from './seed-issues.js';
 
@@ -21,7 +22,7 @@ export async function loadAllIssues() {
     for (const issue of seedIssues) {
       const filename = `${issue.id}.json`;
       await writeIssueFile(filename, issue);
-      await commitIssue(filename, `seed: ${issue.title}`);
+      await commitIssue(filename, `seed: ${issue.name}`);
     }
     files = await listIssueFiles();
   }
@@ -29,15 +30,15 @@ export async function loadAllIssues() {
   return Promise.all(files.map((filename) => readIssueFile(filename)));
 }
 
+// ADR-0018 schema: Issue is just {id, name, status} plus views and a
+// backlogEntries list.
 export async function createIssue() {
   const now = new Date().toISOString();
   const issue = {
     id: crypto.randomUUID(),
-    schemaVersion: 1,
-    title: 'Untitled Issue',
-    theme: '',
-    state: 'open',
-    notes: '',
+    schemaVersion: 2,
+    name: 'Untitled Issue',
+    status: 'open',
     createdAt: now,
     updatedAt: now,
     views: {
@@ -46,11 +47,12 @@ export async function createIssue() {
       interaction: { id: crypto.randomUUID(), format: 'drawio-xml', content: '' },
       object: { id: crypto.randomUUID(), format: 'mermaid', content: '' },
     },
+    backlogEntries: [],
   };
 
   const filename = `${issue.id}.json`;
   await writeIssueFile(filename, issue);
-  await commitIssue(filename, `create: ${issue.title}`);
+  await commitIssue(filename, `create: ${issue.name}`);
 
   return issue;
 }
@@ -67,6 +69,79 @@ export async function restoreView(issue, view, oid) {
   await commitIssue(filename, `restore: ${view} to an earlier version`);
 }
 
+// ADR-0018: a Backlog entry has no status — it exists (a needed change) or
+// it's deleted (resolved/dropped), no in-between. Both mutations below are
+// immediate commits, like createIssue()/restoreView() — discrete actions,
+// not rapid-fire typing (unlike editing an existing entry's name/description,
+// which goes through scheduleSave below instead).
+export async function addBacklogEntry(issue, name) {
+  const now = new Date().toISOString();
+  const entry = { id: crypto.randomUUID(), name, description: '', createdAt: now, updatedAt: now };
+  issue.backlogEntries.push(entry);
+  issue.updatedAt = now;
+
+  const filename = `${issue.id}.json`;
+  await writeIssueFile(filename, issue);
+  await commitIssue(filename, `add entry: ${name}`);
+
+  return entry;
+}
+
+export async function deleteBacklogEntry(issue, entryId) {
+  const entry = issue.backlogEntries.find((e) => e.id === entryId);
+  issue.backlogEntries = issue.backlogEntries.filter((e) => e.id !== entryId);
+  issue.updatedAt = new Date().toISOString();
+
+  const filename = `${issue.id}.json`;
+  await writeIssueFile(filename, issue);
+  await commitIssue(filename, `delete entry: ${entry?.name ?? entryId}`);
+}
+
+// ADR-0019: view copy is overwrite, unchanged from ADR-0010 — destination
+// keeps its own view id, only content + copiedFrom are replaced.
+export async function copyView(sourceIssue, view, destIssue) {
+  const sourceOid = await getHeadCommitOid(sourceIssue.id);
+  const sourceView = sourceIssue.views[view];
+
+  destIssue.views[view] = {
+    ...destIssue.views[view],
+    content: sourceView.content,
+    copiedFrom: { issueId: sourceIssue.id, viewId: sourceView.id, commit: sourceOid, at: new Date().toISOString() },
+  };
+  destIssue.updatedAt = new Date().toISOString();
+
+  const filename = `${destIssue.id}.json`;
+  await writeIssueFile(filename, destIssue);
+  await commitIssue(filename, `copy(${view}): from ${sourceIssue.id}@${sourceOid}`);
+}
+
+// ADR-0019: Backlog-entry copy is list-append, not overwrite — entries are
+// a list, not a singleton slot. A genuinely new entry (new id) in the
+// destination, cloned content, provenance anchored on the source entry's id.
+export async function copyBacklogEntry(sourceIssue, entryId, destIssue) {
+  const sourceOid = await getHeadCommitOid(sourceIssue.id);
+  const sourceEntry = sourceIssue.backlogEntries.find((e) => e.id === entryId);
+  if (!sourceEntry) return;
+
+  const now = new Date().toISOString();
+  const newEntry = {
+    id: crypto.randomUUID(),
+    name: sourceEntry.name,
+    description: sourceEntry.description,
+    createdAt: now,
+    updatedAt: now,
+    copiedFrom: { issueId: sourceIssue.id, entryId: sourceEntry.id, commit: sourceOid, at: now },
+  };
+  destIssue.backlogEntries.push(newEntry);
+  destIssue.updatedAt = now;
+
+  const filename = `${destIssue.id}.json`;
+  await writeIssueFile(filename, destIssue);
+  await commitIssue(filename, `copy(entry): from ${sourceIssue.id}@${sourceOid}`);
+
+  return newEntry;
+}
+
 export function scheduleSave(issue) {
   const existingTimer = saveTimers.get(issue.id);
   if (existingTimer) clearTimeout(existingTimer);
@@ -77,7 +152,7 @@ export function scheduleSave(issue) {
     const filename = `${issue.id}.json`;
     try {
       await writeIssueFile(filename, issue);
-      await commitIssue(filename, `update: ${issue.title}`);
+      await commitIssue(filename, `update: ${issue.name}`);
     } catch (error) {
       console.error('Failed to save issue', issue.id, error);
     }

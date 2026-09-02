@@ -1,4 +1,13 @@
-import { loadAllIssues, scheduleSave, createIssue, restoreView } from '../persistence/issue-store.js';
+import {
+  loadAllIssues,
+  scheduleSave,
+  createIssue,
+  restoreView,
+  addBacklogEntry,
+  deleteBacklogEntry,
+  copyView,
+  copyBacklogEntry,
+} from '../persistence/issue-store.js';
 import { getViewHistory } from '../persistence/git-store.js';
 import { mountProcessCanvas } from '../canvases/process/process-canvas.js';
 import { mountDrawioCanvas } from '../canvases/system/drawio-canvas.js';
@@ -49,6 +58,11 @@ export function shellState() {
     thumbnails: { process: null, system: null, interaction: null, object: null },
     historyOpen: false,
     historyEntries: [],
+    copyPickerOpen: false,
+    copyPickerMode: null, // 'view' | 'entry'
+    copySourceId: '',
+    copySourceEntryId: '',
+    newEntryName: '',
     // Mirrors the data-theme attribute the inline head script already set
     // (ADR-0014) — never re-derived independently, so this can't disagree
     // with what's actually rendered.
@@ -70,7 +84,18 @@ export function shellState() {
     get filteredIssues() {
       const query = this.sidebarQuery.trim().toLowerCase();
       if (!query) return this.issues;
-      return this.issues.filter((issue) => issue.title.toLowerCase().includes(query));
+      return this.issues.filter((issue) => issue.name.toLowerCase().includes(query));
+    },
+
+    // Other Issues to pick as a copy source — never the active one (ADR-0019:
+    // a whole Issue is never copyable, and copying "from itself" is a no-op).
+    get copySourceOptions() {
+      return this.issues.filter((issue) => issue.id !== this.activeIssueId);
+    },
+
+    get copySourceEntries() {
+      const source = this.issues.find((issue) => issue.id === this.copySourceId);
+      return source ? source.backlogEntries : [];
     },
 
     selectIssue(id) {
@@ -94,13 +119,26 @@ export function shellState() {
       this.backlogExpanded = !this.backlogExpanded;
     },
 
-    // Bound to every Backlog field's @input/@change (index.html). activeIssue
-    // is a live reference into the reactive `issues` array, so x-model has
-    // already mutated it in place by the time this runs — same pattern the
-    // canvas onChange handlers use for views[view].content.
+    // Bound to the Issue name/status controls (view-switcher tab bar,
+    // ADR-0018) and to each Backlog entry's name/description fields.
+    // activeIssue is a live reference into the reactive `issues` array, so
+    // x-model has already mutated it in place by the time this runs — same
+    // pattern the canvas onChange handlers use for views[view].content.
     saveActiveIssue() {
       if (!this.activeIssue) return;
       scheduleSave(this.activeIssue);
+    },
+
+    async addEntry() {
+      const name = this.newEntryName.trim();
+      if (!name || !this.activeIssue) return;
+      await addBacklogEntry(this.activeIssue, name);
+      this.newEntryName = '';
+    },
+
+    async deleteEntry(entryId) {
+      if (!this.activeIssue) return;
+      await deleteBacklogEntry(this.activeIssue, entryId);
     },
 
     toggleTheme() {
@@ -207,22 +245,53 @@ export function shellState() {
       }
     },
 
-    async restoreHistoryEntry(oid) {
-      if (!this.activeIssue) return;
-      await restoreView(this.activeIssue, this.activeView, oid);
-
-      // _syncCanvas only remounts on activeIssueId change, never on content
-      // changing while already mounted — nudge it by clearing the tracked
-      // instance. That field is itself a reactive property _syncCanvas
-      // reads, so clearing it triggers the bound x-effect to remount fresh
-      // with the just-restored content.
-      const instanceKey = VIEW_INSTANCE_KEYS[this.activeView];
+    // Shared by both History-restore and Copy(view) below — _syncCanvas only
+    // remounts on activeIssueId change, never on content changing while
+    // already mounted. Clearing the tracked instance nudges it: that field
+    // is itself a reactive property _syncCanvas reads, so clearing it
+    // triggers the bound x-effect to remount fresh with the new content.
+    _forceRemount(view) {
+      const instanceKey = VIEW_INSTANCE_KEYS[view];
       if (instanceKey && this[instanceKey]) {
         this[instanceKey].destroy();
         this[instanceKey] = null;
       }
+    },
 
+    async restoreHistoryEntry(oid) {
+      if (!this.activeIssue) return;
+      await restoreView(this.activeIssue, this.activeView, oid);
+      this._forceRemount(this.activeView);
       this.historyOpen = false;
+    },
+
+    // ADR-0019. mode: 'view' copies into the currently active single-canvas
+    // view (overwrite); 'entry' appends a copy of a chosen source Issue's
+    // Backlog entry to the active Issue's own list.
+    openCopyPicker(mode) {
+      this.copyPickerMode = mode;
+      this.copySourceId = '';
+      this.copySourceEntryId = '';
+      this.copyPickerOpen = true;
+    },
+
+    closeCopyPicker() {
+      this.copyPickerOpen = false;
+    },
+
+    async performCopy() {
+      if (!this.activeIssue || !this.copySourceId) return;
+      const source = this.issues.find((issue) => issue.id === this.copySourceId);
+      if (!source) return;
+
+      if (this.copyPickerMode === 'view') {
+        await copyView(source, this.activeView, this.activeIssue);
+        this._forceRemount(this.activeView);
+      } else if (this.copyPickerMode === 'entry' && this.copySourceEntryId) {
+        await copyBacklogEntry(source, this.copySourceEntryId, this.activeIssue);
+      }
+
+      this.copyPickerOpen = false;
     },
   };
 }

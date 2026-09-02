@@ -75,6 +75,13 @@ export async function getViewHistory(issueId, view) {
   return entries.reverse(); // newest first
 }
 
+// ADR-0019: source content for a copy is always read at HEAD. getIssueHistory
+// returns commits newest-first, so the first entry's oid is HEAD.
+export async function getHeadCommitOid(issueId) {
+  const commits = await getIssueHistory(issueId);
+  return commits[0]?.oid ?? null;
+}
+
 export async function readIssueAtCommit(issueId, oid) {
   const { blob } = await git.readBlob({ fs, dir: DIR, oid, filepath: `${issueId}.json` });
   // readBlob returns raw bytes; Buffer isn't available in the browser, so

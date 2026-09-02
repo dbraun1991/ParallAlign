@@ -51,10 +51,9 @@
                       :class="{ active: issue.id === activeIssueId }"
                       @click="selectIssue(issue.id)"
                     >
-                      <span class="issue-title" x-text="issue.title"></span>
+                      <span class="issue-title" x-text="issue.name"></span>
                       <span class="issue-meta">
-                        <span class="issue-theme" x-text="issue.theme"></span>
-                        <span class="issue-state" :class="'state-' + issue.state" x-text="issue.state"></span>
+                        <span class="issue-state" :class="'state-' + issue.status" x-text="issue.status"></span>
                       </span>
                     </button>
                   </li>
@@ -67,6 +66,27 @@
 
         <main class="view-switcher" x-show="activeIssue">
           <nav class="view-tabs">
+            <template x-if="activeIssue">
+              <div class="issue-header">
+                <input
+                  type="text"
+                  class="issue-name-field"
+                  x-model="activeIssue.name"
+                  @input="saveActiveIssue()"
+                  placeholder="Issue name"
+                />
+                <select
+                  class="issue-status-field issue-state"
+                  :class="'state-' + activeIssue.status"
+                  x-model="activeIssue.status"
+                  @change="saveActiveIssue()"
+                >
+                  <option value="open">open</option>
+                  <option value="mapped">mapped</option>
+                  <option value="decided">decided</option>
+                </select>
+              </div>
+            </template>
             <template x-for="view in ['all', 'process', 'system', 'object', 'interaction']" :key="view">
               <button
                 type="button"
@@ -76,14 +96,10 @@
                 x-text="view === 'all' ? 'All' : view[0].toUpperCase() + view.slice(1)"
               ></button>
             </template>
-            <button
-              type="button"
-              class="history-toggle"
-              x-show="activeView !== 'all'"
-              @click="toggleHistory()"
-            >
-              History
-            </button>
+            <div class="view-tabs-actions" x-show="activeView !== 'all'">
+              <button type="button" class="copy-toggle" @click="openCopyPicker('view')">Copy</button>
+              <button type="button" class="history-toggle" @click="toggleHistory()">History</button>
+            </div>
           </nav>
           <div class="view-content">
             <template x-if="activeView === 'all'">
@@ -123,6 +139,11 @@
                 <h3>History</h3>
                 <button type="button" class="history-close" @click="toggleHistory()">×</button>
               </div>
+              <p
+                class="copy-provenance"
+                x-show="activeIssue && activeIssue.views[activeView] && activeIssue.views[activeView].copiedFrom"
+                x-text="activeIssue && activeIssue.views[activeView] && activeIssue.views[activeView].copiedFrom ? 'Copied from an earlier version of another Issue' : ''"
+              ></p>
               <ul class="history-list">
                 <template x-for="entry in historyEntries" :key="entry.oid">
                   <li class="history-entry">
@@ -156,43 +177,93 @@
           </div>
           <div class="backlog-body" x-show="backlogExpanded" x-cloak>
             <template x-if="activeIssue">
-              <div class="backlog-form">
-                <input
-                  type="text"
-                  class="backlog-field backlog-title-field"
-                  x-model="activeIssue.title"
-                  @input="saveActiveIssue()"
-                  placeholder="Title"
-                />
-                <div class="backlog-meta-fields">
+              <div class="backlog-entries">
+                <div class="backlog-entries-header">
+                  <h3>Backlog</h3>
+                  <button type="button" class="copy-toggle" @click="openCopyPicker('entry')">Copy entry from…</button>
+                </div>
+                <div class="add-entry-form">
                   <input
                     type="text"
-                    class="backlog-field backlog-theme-field"
-                    x-model="activeIssue.theme"
-                    @input="saveActiveIssue()"
-                    placeholder="Theme"
+                    class="backlog-field"
+                    x-model="newEntryName"
+                    @keydown.enter="addEntry()"
+                    placeholder="New entry name…"
                   />
-                  <select
-                    class="backlog-field backlog-state-field issue-state"
-                    :class="'state-' + activeIssue.state"
-                    x-model="activeIssue.state"
-                    @change="saveActiveIssue()"
-                  >
-                    <option value="open">open</option>
-                    <option value="mapped">mapped</option>
-                    <option value="decided">decided</option>
-                  </select>
+                  <button type="button" class="add-entry-button" @click="addEntry()">Add</button>
                 </div>
-                <textarea
-                  class="backlog-field backlog-notes-field"
-                  x-model="activeIssue.notes"
-                  @input="saveActiveIssue()"
-                  placeholder="Notes…"
-                ></textarea>
+                <ul class="backlog-entry-list">
+                  <template x-for="entry in activeIssue.backlogEntries" :key="entry.id">
+                    <li class="backlog-entry">
+                      <div class="backlog-entry-header">
+                        <input
+                          type="text"
+                          class="backlog-field backlog-entry-name-field"
+                          x-model="entry.name"
+                          @input="saveActiveIssue()"
+                        />
+                        <button type="button" class="backlog-entry-delete" @click="deleteEntry(entry.id)">×</button>
+                      </div>
+                      <textarea
+                        class="backlog-field backlog-entry-description-field"
+                        x-model="entry.description"
+                        @input="saveActiveIssue()"
+                        placeholder="Description…"
+                      ></textarea>
+                      <p class="copy-provenance" x-show="entry.copiedFrom">Copied from another Issue</p>
+                    </li>
+                  </template>
+                  <li class="backlog-empty" x-show="activeIssue.backlogEntries.length === 0">No entries yet.</li>
+                </ul>
               </div>
             </template>
           </div>
         </aside>
+      </div>
+
+      <div class="copy-picker-backdrop" x-show="copyPickerOpen" @click="closeCopyPicker()"></div>
+      <div class="copy-picker" x-show="copyPickerOpen">
+        <div class="history-panel-header">
+          <h3 x-text="copyPickerMode === 'view' ? 'Copy ' + activeView + ' from…' : 'Copy Backlog entry from…'"></h3>
+          <button type="button" class="history-close" @click="closeCopyPicker()">×</button>
+        </div>
+        <div class="copy-picker-body">
+          <label class="copy-picker-label">Source Issue</label>
+          <select class="backlog-field" x-model="copySourceId">
+            <option value="">Select an Issue…</option>
+            <template x-for="issue in copySourceOptions" :key="issue.id">
+              <option :value="issue.id" x-text="issue.name"></option>
+            </template>
+          </select>
+
+          <template x-if="copyPickerMode === 'entry' && copySourceId">
+            <div>
+              <label class="copy-picker-label">Entry</label>
+              <select class="backlog-field" x-model="copySourceEntryId">
+                <option value="">Select an entry…</option>
+                <template x-for="entry in copySourceEntries" :key="entry.id">
+                  <option :value="entry.id" x-text="entry.name"></option>
+                </template>
+              </select>
+            </div>
+          </template>
+
+          <p class="copy-picker-note" x-show="copyPickerMode === 'view'">
+            This overwrites the current content. The previous version stays available in History.
+          </p>
+          <p class="copy-picker-note" x-show="copyPickerMode === 'entry'">
+            Adds a new entry — nothing existing is overwritten.
+          </p>
+
+          <button
+            type="button"
+            class="history-restore"
+            :disabled="!copySourceId || (copyPickerMode === 'entry' && !copySourceEntryId)"
+            @click="performCopy()"
+          >
+            Copy
+          </button>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>
