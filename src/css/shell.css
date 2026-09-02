@@ -11,10 +11,6 @@
 }
 
 .theme-toggle {
-  position: fixed;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
@@ -430,10 +426,18 @@ img.all-cell-thumbnail {
   flex: 0 0 32px;
 }
 
-.backlog-toggle {
+.backlog-controls {
   position: absolute;
   top: 8px;
-  left: 4px;
+  left: 8px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.backlog-toggle {
   background: none;
   border: none;
   color: var(--text-muted);
@@ -443,7 +447,7 @@ img.all-cell-thumbnail {
 }
 
 .backlog-body {
-  padding: 40px 16px 16px;
+  padding: 68px 16px 16px;
 }
 
 .backlog-form {

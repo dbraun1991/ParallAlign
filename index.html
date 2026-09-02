@@ -27,12 +27,6 @@
   </head>
   <body>
     <div id="app" x-data="shell()" x-cloak>
-      <button
-        type="button"
-        class="theme-toggle"
-        @click="toggleTheme()"
-        x-text="theme === 'dark' ? 'Light mode' : 'Dark mode'"
-      ></button>
       <div class="loading-state" x-show="loading">
         <p>Loading…</p>
       </div>
@@ -150,7 +144,16 @@
 
         <aside class="backlog-panel" x-show="activeIssue" :class="{ collapsed: !backlogExpanded }" :style="backlogExpanded ? `width: ${backlogWidth}px` : ''">
           <div class="resize-handle resize-handle-left" x-show="backlogExpanded" @mousedown="startResize('backlog', $event)"></div>
-          <button type="button" class="backlog-toggle" @click="toggleBacklog()" x-text="backlogExpanded ? '›' : '‹'"></button>
+          <div class="backlog-controls">
+            <button
+              type="button"
+              class="theme-toggle"
+              x-show="backlogExpanded"
+              @click="toggleTheme()"
+              x-text="theme === 'dark' ? 'Light mode' : 'Dark mode'"
+            ></button>
+            <button type="button" class="backlog-toggle" @click="toggleBacklog()" x-text="backlogExpanded ? '›' : '‹'"></button>
+          </div>
           <div class="backlog-body" x-show="backlogExpanded" x-cloak>
             <template x-if="activeIssue">
               <div class="backlog-form">
