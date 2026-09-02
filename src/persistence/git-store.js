@@ -51,6 +51,30 @@ export async function getIssueHistory(issueId) {
   return git.log({ fs, dir: DIR, filepath: `${issueId}.json` });
 }
 
+// ADR-0009's diffing rule: only commits where views[view].content actually
+// changed count as a "version" of that view. getIssueHistory only narrows to
+// commits that touched this issue's file at all; a commit can touch several
+// views at once (e.g. a bulk import), so this walks oldest-to-newest and
+// keeps only the entries where this specific field actually differs from
+// the previously-kept one.
+export async function getViewHistory(issueId, view) {
+  const commits = await getIssueHistory(issueId);
+  const chronological = [...commits].reverse();
+
+  const entries = [];
+  let previousContent;
+  for (const commit of chronological) {
+    const issueAtCommit = await readIssueAtCommit(issueId, commit.oid);
+    const content = issueAtCommit.views[view]?.content ?? '';
+    if (content !== previousContent) {
+      entries.push({ oid: commit.oid, message: commit.commit.message, timestamp: commit.commit.author.timestamp });
+    }
+    previousContent = content;
+  }
+
+  return entries.reverse(); // newest first
+}
+
 export async function readIssueAtCommit(issueId, oid) {
   const { blob } = await git.readBlob({ fs, dir: DIR, oid, filepath: `${issueId}.json` });
   // readBlob returns raw bytes; Buffer isn't available in the browser, so

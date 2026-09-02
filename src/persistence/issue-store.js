@@ -1,4 +1,11 @@
-import { initRepo, listIssueFiles, readIssueFile, writeIssueFile, commitIssue } from './git-store.js';
+import {
+  initRepo,
+  listIssueFiles,
+  readIssueFile,
+  writeIssueFile,
+  commitIssue,
+  readIssueAtCommit,
+} from './git-store.js';
 import { seedIssues } from './seed-issues.js';
 
 const SAVE_DEBOUNCE_MS = 1500;
@@ -46,6 +53,18 @@ export async function createIssue() {
   await commitIssue(filename, `create: ${issue.title}`);
 
   return issue;
+}
+
+// Immediate commit, not debounced — restoring is a discrete, deliberate
+// action like createIssue(), not rapid-fire typing.
+export async function restoreView(issue, view, oid) {
+  const issueAtCommit = await readIssueAtCommit(issue.id, oid);
+  issue.views[view].content = issueAtCommit.views[view]?.content ?? '';
+  issue.updatedAt = new Date().toISOString();
+
+  const filename = `${issue.id}.json`;
+  await writeIssueFile(filename, issue);
+  await commitIssue(filename, `restore: ${view} to an earlier version`);
 }
 
 export function scheduleSave(issue) {

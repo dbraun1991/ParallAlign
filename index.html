@@ -82,6 +82,14 @@
                 x-text="view === 'all' ? 'All' : view[0].toUpperCase() + view.slice(1)"
               ></button>
             </template>
+            <button
+              type="button"
+              class="history-toggle"
+              x-show="activeView !== 'all'"
+              @click="toggleHistory()"
+            >
+              History
+            </button>
           </nav>
           <div class="view-content">
             <template x-if="activeView === 'all'">
@@ -115,6 +123,25 @@
             <div class="canvas-container" x-show="activeView === 'system'" x-effect="syncSystemCanvas($el)"></div>
             <div class="canvas-container" x-show="activeView === 'interaction'" x-effect="syncInteractionCanvas($el)"></div>
             <div class="canvas-container" x-show="activeView === 'object'" x-effect="syncObjectCanvas($el)"></div>
+
+            <div class="history-panel" x-show="historyOpen">
+              <div class="history-panel-header">
+                <h3>History</h3>
+                <button type="button" class="history-close" @click="toggleHistory()">×</button>
+              </div>
+              <ul class="history-list">
+                <template x-for="entry in historyEntries" :key="entry.oid">
+                  <li class="history-entry">
+                    <p class="history-message" x-text="entry.message"></p>
+                    <p class="history-date" x-text="new Date(entry.timestamp * 1000).toLocaleString()"></p>
+                    <button type="button" class="history-restore" @click="restoreHistoryEntry(entry.oid)">
+                      Restore
+                    </button>
+                  </li>
+                </template>
+                <li class="history-empty" x-show="historyEntries.length === 0">No history yet.</li>
+              </ul>
+            </div>
           </div>
         </main>
         <div class="no-issue-selected" x-show="!activeIssue">

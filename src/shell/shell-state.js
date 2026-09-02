@@ -1,4 +1,5 @@
-import { loadAllIssues, scheduleSave, createIssue } from '../persistence/issue-store.js';
+import { loadAllIssues, scheduleSave, createIssue, restoreView } from '../persistence/issue-store.js';
+import { getViewHistory } from '../persistence/git-store.js';
 import { mountProcessCanvas } from '../canvases/process/process-canvas.js';
 import { mountDrawioCanvas } from '../canvases/system/drawio-canvas.js';
 import { mountObjectCanvas } from '../canvases/object/object-canvas.js';
@@ -15,6 +16,13 @@ function mountProcessCanvasAdapter(wrapperEl, viewObj, onChange) {
 }
 
 const VIEWS = ['all', 'process', 'system', 'object', 'interaction'];
+
+const VIEW_INSTANCE_KEYS = {
+  process: '_processInstance',
+  system: '_systemInstance',
+  interaction: '_interactionInstance',
+  object: '_objectInstance',
+};
 
 // Alpine data factory for the Issue-shell (ADR-0007/0008). Implements the
 // three state-transition rules from ADR-0008's Decision section exactly:
@@ -39,6 +47,8 @@ export function shellState() {
     _interactionInstance: null,
     _objectInstance: null,
     thumbnails: { process: null, system: null, interaction: null, object: null },
+    historyOpen: false,
+    historyEntries: [],
     // Mirrors the data-theme attribute the inline head script already set
     // (ADR-0014) — never re-derived independently, so this can't disagree
     // with what's actually rendered.
@@ -186,6 +196,33 @@ export function shellState() {
       const issue = this.activeIssue;
       this.thumbnails = { process: null, system: null, interaction: null, object: null };
       this.thumbnails = await renderThumbnails(issue, this.theme);
+    },
+
+    // ADR-0009's history-browsing half (3b). Only meaningful for a single-
+    // canvas view, not All — index.html hides the History button there.
+    async toggleHistory() {
+      this.historyOpen = !this.historyOpen;
+      if (this.historyOpen && this.activeIssue) {
+        this.historyEntries = await getViewHistory(this.activeIssue.id, this.activeView);
+      }
+    },
+
+    async restoreHistoryEntry(oid) {
+      if (!this.activeIssue) return;
+      await restoreView(this.activeIssue, this.activeView, oid);
+
+      // _syncCanvas only remounts on activeIssueId change, never on content
+      // changing while already mounted — nudge it by clearing the tracked
+      // instance. That field is itself a reactive property _syncCanvas
+      // reads, so clearing it triggers the bound x-effect to remount fresh
+      // with the just-restored content.
+      const instanceKey = VIEW_INSTANCE_KEYS[this.activeView];
+      if (instanceKey && this[instanceKey]) {
+        this[instanceKey].destroy();
+        this[instanceKey] = null;
+      }
+
+      this.historyOpen = false;
     },
   };
 }
