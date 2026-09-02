@@ -22,6 +22,32 @@ export async function loadAllIssues() {
   return Promise.all(files.map((filename) => readIssueFile(filename)));
 }
 
+export async function createIssue() {
+  const now = new Date().toISOString();
+  const issue = {
+    id: crypto.randomUUID(),
+    schemaVersion: 1,
+    title: 'Untitled Issue',
+    theme: '',
+    state: 'open',
+    notes: '',
+    createdAt: now,
+    updatedAt: now,
+    views: {
+      process: { id: crypto.randomUUID(), format: 'bpmn-xml', content: '' },
+      system: { id: crypto.randomUUID(), format: 'drawio-xml', content: '' },
+      interaction: { id: crypto.randomUUID(), format: 'drawio-xml', content: '' },
+      object: { id: crypto.randomUUID(), format: 'mermaid', content: '' },
+    },
+  };
+
+  const filename = `${issue.id}.json`;
+  await writeIssueFile(filename, issue);
+  await commitIssue(filename, `create: ${issue.title}`);
+
+  return issue;
+}
+
 export function scheduleSave(issue) {
   const existingTimer = saveTimers.get(issue.id);
   if (existingTimer) clearTimeout(existingTimer);

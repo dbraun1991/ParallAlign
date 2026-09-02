@@ -47,6 +47,7 @@
                 placeholder="Search issues…"
                 x-model="sidebarQuery"
               />
+              <button type="button" class="new-issue-button" @click="createNewIssue()">+ New Issue</button>
               <ul class="issue-list">
                 <template x-for="issue in filteredIssues" :key="issue.id">
                   <li>

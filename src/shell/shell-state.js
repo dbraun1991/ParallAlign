@@ -1,4 +1,4 @@
-import { loadAllIssues, scheduleSave } from '../persistence/issue-store.js';
+import { loadAllIssues, scheduleSave, createIssue } from '../persistence/issue-store.js';
 import { mountProcessCanvas } from '../canvases/process/process-canvas.js';
 import { mountDrawioCanvas } from '../canvases/system/drawio-canvas.js';
 import { mountObjectCanvas } from '../canvases/object/object-canvas.js';
@@ -67,6 +67,12 @@ export function shellState() {
       this.activeIssueId = id;
       this.activeView = 'all';
       this.backlogExpanded = true;
+    },
+
+    async createNewIssue() {
+      const issue = await createIssue();
+      this.issues.push(issue);
+      this.selectIssue(issue.id);
     },
 
     setView(view) {
