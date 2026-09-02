@@ -78,6 +78,15 @@ export function shellState() {
       this.backlogExpanded = !this.backlogExpanded;
     },
 
+    // Bound to every Backlog field's @input/@change (index.html). activeIssue
+    // is a live reference into the reactive `issues` array, so x-model has
+    // already mutated it in place by the time this runs — same pattern the
+    // canvas onChange handlers use for views[view].content.
+    saveActiveIssue() {
+      if (!this.activeIssue) return;
+      scheduleSave(this.activeIssue);
+    },
+
     toggleTheme() {
       this.theme = this.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', this.theme);

@@ -125,13 +125,39 @@
           <button type="button" class="backlog-toggle" @click="toggleBacklog()" x-text="backlogExpanded ? '›' : '‹'"></button>
           <div class="backlog-body" x-show="backlogExpanded" x-cloak>
             <template x-if="activeIssue">
-              <div>
-                <h2 x-text="activeIssue.title"></h2>
-                <p class="backlog-meta">
-                  <span x-text="activeIssue.theme"></span> ·
-                  <span class="issue-state" :class="'state-' + activeIssue.state" x-text="activeIssue.state"></span>
-                </p>
-                <p class="backlog-notes" x-text="activeIssue.notes || '(no notes)'"></p>
+              <div class="backlog-form">
+                <input
+                  type="text"
+                  class="backlog-field backlog-title-field"
+                  x-model="activeIssue.title"
+                  @input="saveActiveIssue()"
+                  placeholder="Title"
+                />
+                <div class="backlog-meta-fields">
+                  <input
+                    type="text"
+                    class="backlog-field backlog-theme-field"
+                    x-model="activeIssue.theme"
+                    @input="saveActiveIssue()"
+                    placeholder="Theme"
+                  />
+                  <select
+                    class="backlog-field backlog-state-field issue-state"
+                    :class="'state-' + activeIssue.state"
+                    x-model="activeIssue.state"
+                    @change="saveActiveIssue()"
+                  >
+                    <option value="open">open</option>
+                    <option value="mapped">mapped</option>
+                    <option value="decided">decided</option>
+                  </select>
+                </div>
+                <textarea
+                  class="backlog-field backlog-notes-field"
+                  x-model="activeIssue.notes"
+                  @input="saveActiveIssue()"
+                  placeholder="Notes…"
+                ></textarea>
               </div>
             </template>
           </div>

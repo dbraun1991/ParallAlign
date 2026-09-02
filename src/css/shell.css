@@ -330,20 +330,46 @@ img.all-cell-thumbnail {
   padding: 40px 16px 16px;
 }
 
-.backlog-body h2 {
-  margin: 0 0 8px;
+.backlog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.backlog-field {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: inherit;
+}
+
+.backlog-title-field {
   font-size: 16px;
+  font-weight: 600;
 }
 
-.backlog-meta {
-  color: var(--text-muted);
+.backlog-meta-fields {
+  display: flex;
+  gap: 8px;
+}
+
+.backlog-theme-field {
+  flex: 1 1 auto;
   font-size: 13px;
-  margin: 0 0 12px;
 }
 
-.backlog-notes {
+.backlog-state-field {
+  flex: 0 0 auto;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.backlog-notes-field {
   font-size: 14px;
-  white-space: pre-wrap;
+  min-height: 120px;
+  resize: vertical;
 }
 
 /* ─── Resize handles ─────────────────────────────── */
