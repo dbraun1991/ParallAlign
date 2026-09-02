@@ -100,6 +100,7 @@ Cross-issue copy (ADR-0019, supersedes ADR-0010): a whole Issue is never
 | `docs/adr/0017-*.md` | All-view renders real per-canvas thumbnails |
 | `docs/adr/0018-*.md` | Issue simplified to name+status; Backlog becomes a list of ephemeral entries |
 | `docs/adr/0019-*.md` | Cross-issue copy narrows to views and Backlog entries — never a whole Issue |
+| `docs/adr/0020-*.md` | Tooltips computed directly from live state, never stored |
 
 ## Architecture Decisions
 
@@ -124,6 +125,7 @@ Cross-issue copy (ADR-0019, supersedes ADR-0010): a whole Issue is never
 | [0017](docs/adr/0017-all-view-thumbnails.md) | All-view tiles render real SVG thumbnails per engine (bpmn-js `Viewer.saveSVG()`, Mermaid's own render, draw.io's `load`→ack→`export` postMessage sequence via a hidden iframe), content-hash cached; click-through to the matching view; live updates from other views' edits explicitly deferred |
 | [0018](docs/adr/0018-issue-and-backlog-entries-data-model.md) | Issue narrows to `{id, name, status}` (theme/notes dropped); Backlog becomes a `backlogEntries` list, each `{id, name, description, createdAt, updatedAt}`, no per-entry status — presence is the status, deletion is resolution; `schemaVersion` 1→2, no migration path; Issue name/status UI moves to the view-switcher tab bar |
 | [0019](docs/adr/0019-cross-issue-copy-views-and-entries.md) | View copy stays exactly as ADR-0010 (overwrite); Backlog-entry copy is list-append instead (new id, cloned content, provenance anchored on the source entry's id); a whole Issue is never copyable — reuse via individually copying its pieces, not duplication |
+| [0020](docs/adr/0020-computed-tooltips.md) | Tooltips (Issue/entry names, descriptions, status badges, `copiedFrom` provenance) are computed live from the same in-memory state already driving the element via a native `:title` binding — never a separately stored/cached field |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is **not yet finalized** (ADR-0001) — code and docs alike currently use the README naming; check `docs/adr/README.md` before assuming it's settled. This is exactly why views and the Backlog entry carry their own UUIDs (ADR-0009): identity must survive a naming decision that hasn't happened yet.
 
@@ -177,6 +179,8 @@ Working TODO list for whoever (or whichever session) picks this up next. Items w
   Open questions for whoever picks this up: which orientation (or does the big pane's side follow which tile was clicked?); does the enlarged pane host the real interactive editor (bpmn-js/draw.io/Mermaid, live-editable) or just a bigger static thumbnail; and how this interacts with the view-switcher tabs (All/Process/System/Object/Interaction) already at the top of the shell.
 
   **Extension, noted later:** the All view should have two modes — **work mode**, where clicking a tile does what it does today (ADR-0017's click-through: navigate straight to that canvas's single-view editor), and **presentation mode**, where clicking a tile instead triggers the focus-tile enlarge behavior described above, without navigating away. Needs a mode toggle somewhere in the All view and a decision on which mode is the default.
+- **Restyle the view-switcher header into two rows.** Today `.issue-header` (name field + status picker) and the All/Process/System/Object/Interaction buttons all sit in one flat `.view-tabs` row (`index.html`). Wanted instead: issue name, view mode, and the overall status picker on their own row, with the All/Process/System/Object/Interaction switch as a proper tab bar (tab-styled, not a row of plain buttons) underneath. "View mode" here isn't a control that exists yet — likely the work-mode/presentation-mode toggle noted under All-view focus-tile layout below; needs clarifying when this is picked up.
+- **Computed tooltips** (ADR-0020) — `:title` bindings on truncated/abbreviated UI text (Issue name, Backlog entry name/description, status badges, `copiedFrom` provenance), all computed live from state already in scope; not built yet.
 - **Live All-view thumbnail updates** (ADR-0017, explicitly deferred there) — thumbnails currently only (re)render when the All view is entered; making them react while another view is being edited elsewhere needs a cross-view invalidation hook that doesn't exist yet.
 - **Bundle size.** `npm run build` has warned since Step 4 that the main chunk exceeds 500kB (bpmn-js + draw.io-adjacent + Mermaid all in one bundle) — worth revisiting with per-canvas `import()` code-splitting once it's actually felt, not purely on principle.
 - **Server-backed git layer** (ADR-0009/0011) — client-side git (`isomorphic-git`/IndexedDB) was the deliberate starting point; a real Express/Node server is the expected next step once multi-device access or real-time collaboration are actually needed.

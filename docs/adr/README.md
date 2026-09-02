@@ -23,5 +23,6 @@ Numbered, append-only decision log for Parall-Align. Each ADR captures the conte
 | [0017](0017-all-view-thumbnails.md) | All-view renders real per-canvas thumbnails | Proposed |
 | [0018](0018-issue-and-backlog-entries-data-model.md) | Issue simplified to name+status; Backlog becomes a list of ephemeral entries | Proposed |
 | [0019](0019-cross-issue-copy-views-and-entries.md) | Cross-issue copy narrows to views and Backlog entries — never a whole Issue | Proposed |
+| [0020](0020-computed-tooltips.md) | Tooltips computed directly from live state, never stored | Proposed |
 
 Naming for the canvases (Process/System/Object/Interaction/Backlog) is not yet finalized as of ADR-0001 — these ADRs use the current README naming and should be updated if it changes.
