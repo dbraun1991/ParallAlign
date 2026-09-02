@@ -46,6 +46,12 @@
   background: var(--surface);
   border-right: 1px solid var(--border);
   overflow-y: auto;
+  /* Without this, the resize handle's `right: -3px` (below) pokes 3px
+     outside the sidebar's box, and overflow-y: auto forces overflow-x to
+     also become non-visible per the CSS spec (an element can't have one
+     axis 'visible' and the other 'scroll'/'auto'/'hidden') — so that 3px
+     sliver was enough to spawn a spurious horizontal scrollbar. */
+  overflow-x: hidden;
 }
 
 /* Desktop: the collapse toggle is hidden and the <details> stays open (via

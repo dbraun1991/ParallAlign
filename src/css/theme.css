@@ -29,6 +29,16 @@
   --state-decided: #2e7d32;
 }
 
+/* Without this, flex-stretched children (inputs, buttons) add their
+   padding/border on top of their stretched width instead of including it —
+   overflowing their container by a few pixels and forcing a spurious
+   horizontal scrollbar (seen in the sidebar). Standard reset. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: var(--font-family);
